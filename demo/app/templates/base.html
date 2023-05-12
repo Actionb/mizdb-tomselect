@@ -1,0 +1,20 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIZDB TomSelect Demo</title>
+    <link href="{% static 'bootstrap/dist/css/bootstrap.css' %}" rel="stylesheet">
+    <script src="{% static 'bootstrap/dist/js/bootstrap.bundle.js' %}"></script>
+    <script src="{% static 'tom-select/dist/js/tom-select.complete.js' %}"></script>
+    <link href="{% static 'tom-select/dist/css/tom-select.bootstrap5.css' %}" rel="stylesheet">
+    <script src="{% static 'mizdb-tomselect/js/mizdb-tomselect-init.js' %}"></script>
+</head>
+<body>
+<div class="container">
+    <form>
+        {{ form.as_div }}
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+</body>
+</html>
