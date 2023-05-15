@@ -17,11 +17,11 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import FormView
 
+from mizdb_tomselect.views import AutocompleteView
 from .forms import Form
-from .views import ACView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', FormView.as_view(form_class=Form, template_name="base.html"), name='demo'),
-    path('autocomplete', ACView.as_view(), name='autocomplete')
+    path('autocomplete/', AutocompleteView.as_view(), name='autocomplete')
 ]

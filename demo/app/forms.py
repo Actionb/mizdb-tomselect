@@ -5,16 +5,14 @@ from .models import Ausgabe
 
 
 class Form(forms.Form):
-    charfield = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control mb-3'}))
-    tomselect = forms.ChoiceField(choices=[(1, 1), (2, 2)], widget=forms.Select(attrs={'class': 'form-control mb-3'}))
     mizselect = forms.ModelChoiceField(
-        Ausgabe.objects.all(), 
-        widget=MIZSelect(Ausgabe, attrs={'class': 'form-control mb-3'} )
+        Ausgabe.objects.all(),
+        widget=MIZSelect(Ausgabe, attrs={'class': 'form-control mb-3'})
     )
     mizselect_tabular = forms.ModelChoiceField(
-        Ausgabe.objects.all(), 
+        Ausgabe.objects.all(),
         widget=TabularMIZSelect(
-            Ausgabe, 
+            Ausgabe,
             extra_columns={'jahr': 'Jahr', 'num': 'Nummer', 'lnum': 'lfd.Nummer'},
             label_field_label='Ausgabe',
             attrs={'class': 'form-control mb-3'}
