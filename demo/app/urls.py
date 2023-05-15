@@ -17,8 +17,8 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import FormView
 
-from demo.app.forms import Form
-from demo.app.views import ACView
+from .forms import Form
+from .views import ACView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
