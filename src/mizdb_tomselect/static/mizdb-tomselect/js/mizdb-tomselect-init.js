@@ -16,28 +16,54 @@ addEventListener("DOMContentLoaded", (event) => {
                 // input element that we can style more easily than the default
                 // TomSelect input (f.ex. to have the element respect the 
                 // theme's box-shadow colour).
-                dropdown_input: ''
+                dropdown_input: null,
             },
             render: {
                 option_create: function(data, escape) {
                     return '<div class="create bg-secondary text-bg-secondary">Hinzufügen <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+                },
+                loading_more: function(data, escape) {
+                    return `<div class="loading-more-results py-2 d-flex align-items-center"><div class="spinner"></div> Lade mehr Ergebnisse </div>`;
                 }
             }
         }
 
-        const url = elem.dataset['autocompleteUrl'];
-        if (url) {
+        const endpoint = elem.dataset['autocompleteUrl'];
+        if (endpoint) {
             const model = elem.dataset['model'];
-            settings.load = function(query, callback){
-                let params = new URLSearchParams({'q': encodeURIComponent(query)});
+
+            function buildUrl(query, page){
+                let params = new URLSearchParams({
+                    'q': encodeURIComponent(query),
+                    'p': page,
+                });
                 if (model) {
-                    params.append('model', encodeURIComponent(model))
+                    params.append('model', encodeURIComponent(model));
                 }
-                fetch(`${url}?${params.toString()}`)
+                return `${endpoint}?${params.toString()}`;
+            }
+
+            settings.plugins.virtual_scroll = null;
+            settings.firstUrl = function(query) {
+                return buildUrl(query, 1);
+            }
+
+            settings.load = function(query, callback){
+                const url = this.getUrl(query);
+                fetch(url)
                     .then(response => response.json())
                     .then(json => {
-                        this.clearOptions();
+                        if (json.has_more){
+                            this.setNextUrl(query, buildUrl(query, json.page + 1));
+                        }
+                        // Workaround for an issue of the virtual scroll plugin
+                        // where it  scrolls to the top of the results whenever
+                        // a new page of results is added.
+                        // https://github.com/orchidjs/tom-select/issues/556
+                        const _scrollToOption = this.scrollToOption;
+                        this.scrollToOption = () => {};
                         callback(json.results);
+                        this.scrollToOption = _scrollToOption;
                     }).catch(()=>{
                         callback();
                     });

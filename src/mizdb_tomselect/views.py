@@ -2,29 +2,43 @@ from django import http
 from django import views
 from django.apps import apps
 
-SEARCH_VAR = 'q'
+SEARCH_VAR = "q"
+PAGE_VAR = "p"
+PAGE_SIZE = 20
 
 
 class AutocompleteView(views.generic.list.BaseListView):
     """Query endpoint for TomSelect elements."""
+
+    paginate_by = PAGE_SIZE
+    page_kwarg = PAGE_VAR
     
     def setup(self, request, *args, **kwargs):
-        super().setup(self, request, *args, **kwargs)
+        super().setup(request, *args, **kwargs)
         self.model = apps.get_model(request.GET['model'])
         # TODO: set attributes from request parameters and kwargs
     
     def filter_queryset(self, queryset, q):
         return queryset.search(q)
+
+    def order_queryset(self, queryset):
+        ordering = self.model._meta.ordering or ['id']
+        return queryset.order_by(*ordering)
     
     def get_results(self, q):
-        for result in self.filter_queryset(self.get_queryset(), q).values():
-            yield result
+        queryset = self.filter_queryset(self.get_queryset(), q).values()
+        return self.order_queryset(queryset)
 
     def get(self, request, *args, **kwargs):
-        # TODO: include pagination
         # TODO: check if should show create option
+        queryset = self.get_results(request.GET.get(SEARCH_VAR, ''))
+        page_size = self.get_paginate_by(queryset)
+        _, page, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
         data = {
-            'results': list(self.get_results(request.GET.get(SEARCH_VAR, ''))),
+            'results': list(page.object_list),
+            'page': page.number,
+            'has_more': page.has_next(),
+            'is_paginated': is_paginated,
         }
         return http.JsonResponse(data)
 

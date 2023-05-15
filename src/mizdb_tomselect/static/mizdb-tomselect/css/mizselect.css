@@ -1,5 +1,8 @@
-/* Use the theme's primary color as box-shadow colour for the focussed control input */
+.ts-dropdown-content {
+    max-height: 300px;
+}
 
+/* Use the theme's primary color as box-shadow colour for the focussed control input */
 .plugin-dropdown_input.focus .ts-dropdown .dropdown-input {
   border: 0;
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
