@@ -1,6 +1,7 @@
 from django import http
 from django import views
 from django.apps import apps
+from django.contrib.auth import get_permission_codename
 
 SEARCH_VAR = "q"
 PAGE_VAR = "p"
@@ -15,8 +16,9 @@ class AutocompleteView(views.generic.list.BaseListView):
     
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.model = apps.get_model(request.GET['model'])
-        # TODO: set attributes from request parameters and kwargs
+        request_data = getattr(request, request.method)
+        self.model = apps.get_model(request_data['model'])
+        self.create_field = request_data.get('create-field')
     
     def filter_queryset(self, queryset, q):
         """Apply search filters on the result queryset."""
@@ -47,7 +49,7 @@ class AutocompleteView(views.generic.list.BaseListView):
 
     def has_add_permission(self, request):
         """Return True if the user has the permission to add a model object."""
-        if request.user.is_authenticated:
+        if not request.user.is_authenticated:
             return False
         
         opts = self.model._meta
