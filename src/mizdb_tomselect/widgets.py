@@ -1,6 +1,7 @@
 import json
 
 from django import forms
+from django.urls import reverse
 
 
 class MIZSelect(forms.Select):
@@ -35,7 +36,7 @@ class MIZSelect(forms.Select):
         opts = self.model._meta
         attrs.update({
             'is-tomselect': True,
-            'data-autocomplete-url': self.url,
+            'data-autocomplete-url': reverse(self.url),
             'data-model': f"{opts.app_label}.{opts.model_name}",
             'data-value-field': self.value_field,
             'data-label-field': self.label_field,
