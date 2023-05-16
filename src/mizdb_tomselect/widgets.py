@@ -1,8 +1,6 @@
 from typing import Any, Optional, Sequence, Tuple
 from django import forms
 
-# TODO: initially: only render selected choices
-
 
 class MIZSelect(forms.Select):
 
@@ -20,6 +18,9 @@ class MIZSelect(forms.Select):
         self.value_field = value_field
         self.label_field = label_field
         super().__init__(**kwargs)
+
+    def optgroups(self, name, value, attrs=None):
+        return []
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         """Build HTML attributes for the widget."""
