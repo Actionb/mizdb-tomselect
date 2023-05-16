@@ -8,7 +8,7 @@ PAGE_SIZE = 20
 
 
 class AutocompleteView(views.generic.list.BaseListView):
-    """Query endpoint for TomSelect elements."""
+    """Base list view for queries from TomSelect select elements."""
 
     paginate_by = PAGE_SIZE
     page_kwarg = PAGE_VAR
@@ -19,13 +19,16 @@ class AutocompleteView(views.generic.list.BaseListView):
         # TODO: set attributes from request parameters and kwargs
     
     def filter_queryset(self, queryset, q):
+        """Apply search filters on the result queryset."""
         return queryset.search(q)
 
     def order_queryset(self, queryset):
+        """Apply ordering to the result queryset."""
         ordering = self.model._meta.ordering or ['id']
         return queryset.order_by(*ordering)
     
     def get_results(self, q):
+        """Search for objects that match the search term and return the results."""
         queryset = self.filter_queryset(self.get_queryset(), q).values()
         return self.order_queryset(queryset)
 
@@ -52,6 +55,7 @@ class AutocompleteView(views.generic.list.BaseListView):
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
     
     def create_object(self, data):
+        """Create a new object with the given data."""
         return self.model.objects.create(**{self.create_field: data[self.create_field]})
     
     def post(self, request, *args, **kwargs):

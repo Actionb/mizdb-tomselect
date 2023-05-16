@@ -3,15 +3,21 @@ from django import forms
 
 
 class MIZSelect(forms.Select):
-
-    url = ''  # urlname 
-    model = None
-    create_field = ''  # model field to use to create new objects with
-
-    value_field = ''  # TomSelect: valueField
-    label_field = ''  # model field for the item labels  # TomSelect: labelField
+    """A select widget for TomSelect with model object choices."""
     
-    def __init__(self, model, url='autocomplete', create_field='', value_field='id', label_field='name', **kwargs):
+    def __init__(self, model, url='autocomplete', value_field='id', label_field='name', create_field='', **kwargs):
+        """
+        Instantiate a MIZSelect widget.
+
+        Args:
+            model: the django model that the choices are derived from
+            url: the URL pattern name of the view that serves the choices and
+              handles requests from the TomSelect element
+            value_field: the name of the field that has the choice value (i.e. 'id')
+            label_field: the name of the field that contains the human-readable
+              value for a choice
+            create_field: the name of the field to use to create missing values
+        """
         self.model = model
         self.url = url
         self.create_field = create_field
@@ -20,7 +26,7 @@ class MIZSelect(forms.Select):
         super().__init__(**kwargs)
 
     def optgroups(self, name, value, attrs=None):
-        return []
+        return []  # Never provide any options; let the view serve the options.
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         """Build HTML attributes for the widget."""
@@ -38,16 +44,19 @@ class MIZSelect(forms.Select):
 
 
 class TabularMIZSelect(MIZSelect):
-    """Display results in a table with a table header."""
-
-    # dropdown header attributes
-    value_field_label = ''  # TomSelect: valueFieldLabel
-    label_field_label = ''  # TomSelect: labelFieldLabel
-
-    # mapping of model field name to header label for additional columns
-    extra_columns = None
+    """A TomSelect widget that displays results in a table with a table header."""
     
     def __init__(self, *args, extra_columns=None, value_field_label='ID', label_field_label='Object', **kwargs):
+        """
+        Instantiate a TabularMIZSelect widget.
+
+        Args:
+            extra_columns: a mapping of field names to column labels.
+              The field name tells TomSelect what values to look up on a result.
+              The label is the table header label for the column.
+            value_field_label: table header label for the column of the value field
+            label_field_label: table header label for the column of the label field
+        """
         super().__init__(*args, **kwargs)
         self.value_field_label = value_field_label
         self.label_field_label = label_field_label
