@@ -44,6 +44,14 @@ class MIZSelect(forms.Select):
         })
         return attrs
 
+    class Media:
+        css = {
+            "all": ['tom-select/dist/css/tom-select.bootstrap5.css',
+                    'mizdb-tomselect/css/mizselect.css'],
+        }
+        js = ['tom-select/dist/js/tom-select.complete.js',
+              'mizdb-tomselect/js/mizdb-tomselect-init.js']
+
 
 class TabularMIZSelect(MIZSelect):
     """A TomSelect widget that displays results in a table with a table header."""

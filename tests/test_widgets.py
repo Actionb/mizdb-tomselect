@@ -29,6 +29,15 @@ class TestMIZSelect(TestCase):
         self.assertEqual(attrs['data-label-field'], 'num'),
         self.assertEqual(attrs['data-create-field'], 'the_create_field')
 
+    def test_media(self):
+        """Assert that the necessary static files are included."""
+        media = MIZSelect(model=Ausgabe).media
+        css = ['mizselect.css', 'tom-select.bootstrap5.css']
+        js = ['mizdb-tomselect-init.js', 'tom-select.complete.js']
+        for static_file in (*css, *js):
+            with self.subTest(static_file=static_file):
+                self.assertIn(static_file, str(media))
+
 
 class TestTabularMIZSelect(TestCase):
 
