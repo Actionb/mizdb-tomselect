@@ -2,8 +2,17 @@
     max-height: 300px;
 }
 
-/* Use the theme's primary color as box-shadow colour for the focussed control input */
+/* Use the theme's primary color as box-shadow colour */
 .plugin-dropdown_input.focus .ts-dropdown .dropdown-input {
   border: 0;
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.focus .ts-control {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.ts-wrapper.multi .ts-control > div.active {
+    background: var(--bs-primary);
+    color: #fff;
 }

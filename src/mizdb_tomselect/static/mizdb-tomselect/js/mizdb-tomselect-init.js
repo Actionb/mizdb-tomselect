@@ -8,23 +8,25 @@ addEventListener("DOMContentLoaded", (event) => {
             // Pad the dropdown to make it appear in a neat box:
             dropdownClass: 'ts-dropdown p-2',
 
-            valueField: elem.dataset['valueField'] || "id",
-            labelField: elem.dataset['labelField'] || "name",
+            valueField: elem.dataset['valueField'],
+            labelField: elem.dataset['labelField'],
             createField: elem.dataset['createField'],
             plugins: {
-                // Use the dropdown input plugin to introduce a separate search
-                // input element that we can style more easily than the default
-                // TomSelect input (f.ex. to have the element respect the 
-                // theme's box-shadow colour).
                 dropdown_input: null,
             },
             render: {
+                no_results: function(data,escape){
+                    return '<div class="no-results">Keine Ergebnisse</div>';
+                },
                 option_create: function(data, escape) {
                     return '<div class="create bg-secondary text-bg-secondary">Hinzufügen <strong>' + escape(data.input) + '</strong>&hellip;</div>';
                 },
                 loading_more: function(data, escape) {
                     return `<div class="loading-more-results py-2 d-flex align-items-center"><div class="spinner"></div> Lade mehr Ergebnisse </div>`;
-                }
+                },
+                no_more_results: function(data,escape){
+                    return `<div class="no-more-results">Keine weiteren Ergebnisse</div>`;
+                },
             }
         }
 
@@ -76,7 +78,7 @@ addEventListener("DOMContentLoaded", (event) => {
             }
 
             // TODO: enable item creation
-            if (model && elem.dataset['createField']) {
+            if (elem.dataset['createField']) {
                 settings.create = true;
             }
         }
@@ -106,6 +108,7 @@ addEventListener("DOMContentLoaded", (event) => {
             // If there are more columns than just the value field and the 
             // label field, add a table header using the dropdown header plugin.
             if (settings.extra_columns) {
+                // TODO: could settings.plugin just be an array?
                 settings.plugins.dropdown_header = {
                     html: function(data){
                         let header = `<div class="col-1"><span class="${data.labelClass}">${data.valueFieldLabel}</span></div>
