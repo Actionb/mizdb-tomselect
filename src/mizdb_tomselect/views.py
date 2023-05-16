@@ -43,7 +43,6 @@ class AutocompleteView(views.generic.list.BaseListView):
             'results': list(page.object_list),
             'page': page.number,
             'has_more': page.has_next(),
-            'is_paginated': is_paginated,
         }
         return http.JsonResponse(data)
 
