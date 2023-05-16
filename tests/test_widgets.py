@@ -20,9 +20,11 @@ class TestMIZSelect(TestCase):
             value_field='pk',
             label_field='num',
             create_field='the_create_field',
+            multiple=True
         )
         attrs = widget.build_attrs({})
         self.assertTrue(attrs['is-tomselect'])
+        self.assertTrue(attrs['is-multiple'])
         self.assertEqual(attrs['data-autocomplete-url'], '/dummy/url/'),
         self.assertEqual(attrs['data-model'], f"{Ausgabe._meta.app_label}.{Ausgabe._meta.model_name}")
         self.assertEqual(attrs['data-value-field'], 'pk')

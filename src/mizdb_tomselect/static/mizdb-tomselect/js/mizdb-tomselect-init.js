@@ -28,6 +28,12 @@ addEventListener("DOMContentLoaded", (event) => {
             }
         }
 
+        if (elem.hasAttribute('is-multiple')) {
+            settings.maxItems = 10;
+            settings.plugins.remove_button = {'title': 'Entfernen'};
+            settings.plugins.clear_button = {'title': 'Auswahl aufheben'};
+        }
+
         const endpoint = elem.dataset['autocompleteUrl'];
         if (endpoint) {
             const model = elem.dataset['model'];

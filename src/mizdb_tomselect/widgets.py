@@ -7,7 +7,8 @@ from django.urls import reverse
 class MIZSelect(forms.Select):
     """A select widget for TomSelect with model object choices."""
     
-    def __init__(self, model, url='autocomplete', value_field='id', label_field='name', create_field='', **kwargs):
+    def __init__(self, model, url='autocomplete', value_field='id',
+                 label_field='name', create_field='', multiple=False, **kwargs):
         """
         Instantiate a MIZSelect widget.
 
@@ -19,12 +20,14 @@ class MIZSelect(forms.Select):
             label_field: the name of the field that contains the human-readable
               value for a choice
             create_field: the name of the field to use to create missing values
+            multiple: if True, allow selecting multiple options
         """
         self.model = model
         self.url = url
         self.create_field = create_field
         self.value_field = value_field
         self.label_field = label_field
+        self.multiple = multiple
         super().__init__(**kwargs)
 
     def optgroups(self, name, value, attrs=None):
@@ -36,6 +39,7 @@ class MIZSelect(forms.Select):
         opts = self.model._meta
         attrs.update({
             'is-tomselect': True,
+            'is-multiple': self.multiple,
             'data-autocomplete-url': reverse(self.url),
             'data-model': f"{opts.app_label}.{opts.model_name}",
             'data-value-field': self.value_field,
