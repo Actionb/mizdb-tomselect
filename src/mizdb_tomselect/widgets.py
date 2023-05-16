@@ -1,4 +1,5 @@
-from typing import Any, Optional, Sequence, Tuple
+import json
+
 from django import forms
 
 
@@ -69,8 +70,8 @@ class TabularMIZSelect(MIZSelect):
             'is-tabular': True,
             'data-value-field-label': self.value_field_label,
             'data-label-field-label': self.label_field_label,
-            'data-extra-headers': ','.join(self.extra_columns.values()),
-            'data-extra-columns': ','.join(self.extra_columns.keys()),
+            'data-extra-headers': json.dumps(list(self.extra_columns.values())),
+            'data-extra-columns': json.dumps(list(self.extra_columns.keys())),
         })
         return attrs
     

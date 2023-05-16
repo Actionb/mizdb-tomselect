@@ -77,7 +77,7 @@ addEventListener("DOMContentLoaded", (event) => {
         
         if (elem.hasAttribute('is-tabular')) {
             // Render the dropdown as a table.
-            settings.extra_columns = elem.dataset['extraColumns'].split(',') || [];
+            settings.extra_columns = JSON.parse(elem.dataset['extraColumns']);
 
             // Allocate more width to the label field column if there are only
             // some extra columns, otherwise allocate equal width to all columns.
@@ -114,7 +114,7 @@ addEventListener("DOMContentLoaded", (event) => {
                     valueFieldLabel: elem.dataset['valueFieldLabel'],
                     labelFieldLabel: elem.dataset['labelFieldLabel'],
                     labelColWidth: settings.label_col_width,
-                    extra_headers: elem.dataset['extraHeaders'].split(',') || [],
+                    extra_headers: JSON.parse(elem.dataset['extraHeaders']),
                     headerClass: "container-fluid bg-primary text-bg-primary pt-1 pb-1 mb-2",
                     titleRowClass: "row",
                 }
