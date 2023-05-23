@@ -1,0 +1,8 @@
+Django==4.1.*
+coverage
+tox
+-e .
+pytest
+pytest-django
+pytest-xdist
+pytest-cov

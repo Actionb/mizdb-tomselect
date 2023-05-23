@@ -1,4 +1,0 @@
-Django==4.1.*
-coverage
-tox
--e .

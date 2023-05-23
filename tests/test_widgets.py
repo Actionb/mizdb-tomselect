@@ -1,20 +1,31 @@
-from django.test import TestCase
+import pytest
 
 from mizdb_tomselect.widgets import TabularMIZSelect, MIZSelect
-from .models import Ausgabe
+from testapp.models import Ausgabe
 
 
-class TestMIZSelect(TestCase):
+class WidgetTestCase:
+    widget_class = None
 
-    def test_no_initial_choices(self):
+    @pytest.fixture(autouse=True)
+    def make_widget(self):
+        def _make_widget(model=Ausgabe, **kwargs):
+            return self.widget_class(model, **kwargs)
+
+        self.make_widget = _make_widget
+
+
+class TestMIZSelect(WidgetTestCase):
+    widget_class = MIZSelect
+
+    def test_optgroups_no_initial_choices(self):
         """Assert that the widget is rendered without any options."""
-        widget = MIZSelect(model=Ausgabe)
-        context = widget.get_context('ausgabe', None, {})
-        self.assertFalse(context['widget']['optgroups'])
+        context = self.make_widget().get_context('ausgabe', None, {})
+        assert not context['widget']['optgroups']
 
-    def test_attrs(self):
+    def test_build_attrs(self):
         """Assert that the required HTML attributes are added."""
-        widget = MIZSelect(
+        widget = self.make_widget(
             model=Ausgabe,
             url='dummy_url',
             value_field='pk',
@@ -23,37 +34,38 @@ class TestMIZSelect(TestCase):
             multiple=True
         )
         attrs = widget.build_attrs({})
-        self.assertTrue(attrs['is-tomselect'])
-        self.assertTrue(attrs['is-multiple'])
-        self.assertEqual(attrs['data-autocomplete-url'], '/dummy/url/'),
-        self.assertEqual(attrs['data-model'], f"{Ausgabe._meta.app_label}.{Ausgabe._meta.model_name}")
-        self.assertEqual(attrs['data-value-field'], 'pk')
-        self.assertEqual(attrs['data-label-field'], 'num'),
-        self.assertEqual(attrs['data-create-field'], 'the_create_field')
+        assert attrs['is-tomselect']
+        assert attrs['is-multiple']
+        assert attrs['data-autocomplete-url'] == '/dummy/url/'
+        assert attrs['data-model'] == f"{Ausgabe._meta.app_label}.{Ausgabe._meta.model_name}"
+        assert attrs['data-value-field'] == 'pk'
+        assert attrs['data-label-field'] == 'num'
+        assert attrs['data-create-field'] == 'the_create_field'
 
-    def test_media(self):
+    @pytest.mark.parametrize(
+        "static_file",
+        ('mizselect.css', 'tom-select.bootstrap5.css',
+         'mizdb-tomselect-init.js', 'tom-select.complete.js')
+    )
+    def test_media(self, static_file):
         """Assert that the necessary static files are included."""
-        media = MIZSelect(model=Ausgabe).media
-        css = ['mizselect.css', 'tom-select.bootstrap5.css']
-        js = ['mizdb-tomselect-init.js', 'tom-select.complete.js']
-        for static_file in (*css, *js):
-            with self.subTest(static_file=static_file):
-                self.assertIn(static_file, str(media))
+        assert static_file in str(self.make_widget().media)
 
 
-class TestTabularMIZSelect(TestCase):
+class TestTabularMIZSelect(WidgetTestCase):
+    widget_class = TabularMIZSelect
 
-    def test_attrs(self):
+    def test_build_attrs(self):
         """Assert that the required HTML attributes are added."""
-        widget = TabularMIZSelect(
+        widget = self.make_widget(
             model=Ausgabe,
             extra_columns={'jahr': 'Jahr', 'num': 'Nummer', 'lnum': 'lfd.Nummer'},
             value_field_label='Primary Key',
             label_field_label='Ausgabe',
         )
         attrs = widget.build_attrs({})
-        self.assertEqual(attrs['is-tabular'], True)
-        self.assertEqual(attrs['data-value-field-label'], 'Primary Key')
-        self.assertEqual(attrs['data-label-field-label'], 'Ausgabe')
-        self.assertEqual(attrs['data-extra-headers'], '["Jahr", "Nummer", "lfd.Nummer"]')
-        self.assertEqual(attrs['data-extra-columns'], '["jahr", "num", "lnum"]')
+        assert attrs['is-tabular']
+        assert attrs['data-value-field-label'] == 'Primary Key'
+        assert attrs['data-label-field-label'] == 'Ausgabe'
+        assert attrs['data-extra-headers'] == '["Jahr", "Nummer", "lfd.Nummer"]'
+        assert attrs['data-extra-columns'] == '["jahr", "num", "lnum"]'
