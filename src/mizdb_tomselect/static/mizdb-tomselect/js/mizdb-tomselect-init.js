@@ -124,7 +124,7 @@ addEventListener("DOMContentLoaded", (event) => {
                     labelFieldLabel: elem.dataset['labelFieldLabel'],
                     labelColWidth: settings.label_col_width,
                     extra_headers: JSON.parse(elem.dataset['extraHeaders']),
-                    headerClass: "container-fluid bg-primary text-bg-primary pt-1 pb-1 mb-2",
+                    headerClass: "container-fluid bg-primary text-bg-primary pt-1 pb-1 mb-2 dropdown-header",
                     titleRowClass: "row",
                 }
             }
