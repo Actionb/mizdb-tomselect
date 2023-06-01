@@ -2,6 +2,7 @@ addEventListener("DOMContentLoaded", (event) => {
     document.querySelectorAll("[is-tomselect]").forEach((elem) => {
         let settings = {
             preload: 'focus',
+            maxOptions: null,
             searchField: [],  // disable sifter search
             // Add bootstrap 'form-control' to the search input:
             controlInput: '<input class="form-control mb-1"/>',
