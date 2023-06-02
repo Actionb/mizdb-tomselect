@@ -5,3 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mizdb-tomselect"
 version = "0.0.1"
+
+[tool.coverage.run]
+branch = true
+source = ["mizdb_tomselect"]
+
+[tool.coverage.paths]
+source = ["src", ".tox/*/site-packages"]
