@@ -11,8 +11,8 @@ def csrf_cookie_view(request):
 
 
 urlpatterns = [
-    path('csrf/', csrf_cookie_view, name='csrf'),
-    path('dummy/url/', lambda r: HttpResponse(), name='dummy_url'),
-    path('autocomplete/', AutocompleteView.as_view(), name='autocomplete'),
-    path('testapp/', include('testapp.urls'))
+    path("csrf/", csrf_cookie_view, name="csrf"),
+    path("dummy/url/", lambda r: HttpResponse(), name="dummy_url"),
+    path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
+    path("testapp/", include("testapp.urls")),
 ]

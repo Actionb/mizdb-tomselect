@@ -17,8 +17,8 @@ class Ausgabe(models.Model):
     objects = SearchQueryset.as_manager()
 
     class Meta:
-        verbose_name = 'Ausgabe'
-        verbose_name_plural = 'Ausgaben'
+        verbose_name = "Ausgabe"
+        verbose_name_plural = "Ausgaben"
 
     def __str__(self):
         return self.name

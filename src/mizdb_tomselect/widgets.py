@@ -6,9 +6,10 @@ from django.urls import reverse
 
 class MIZSelect(forms.Select):
     """A select widget for TomSelect with model object choices."""
-    
-    def __init__(self, model, url='autocomplete', value_field='id',
-                 label_field='name', create_field='', multiple=False, **kwargs):
+
+    def __init__(
+        self, model, url="autocomplete", value_field="id", label_field="name", create_field="", multiple=False, **kwargs
+    ):
         """
         Instantiate a MIZSelect widget.
 
@@ -37,30 +38,30 @@ class MIZSelect(forms.Select):
         """Build HTML attributes for the widget."""
         attrs = super().build_attrs(base_attrs, extra_attrs)
         opts = self.model._meta
-        attrs.update({
-            'is-tomselect': True,
-            'is-multiple': self.multiple,
-            'data-autocomplete-url': reverse(self.url),
-            'data-model': f"{opts.app_label}.{opts.model_name}",
-            'data-value-field': self.value_field,
-            'data-label-field': self.label_field,
-            'data-create-field': self.create_field,
-        })
+        attrs.update(
+            {
+                "is-tomselect": True,
+                "is-multiple": self.multiple,
+                "data-autocomplete-url": reverse(self.url),
+                "data-model": f"{opts.app_label}.{opts.model_name}",
+                "data-value-field": self.value_field,
+                "data-label-field": self.label_field,
+                "data-create-field": self.create_field,
+            }
+        )
         return attrs
 
     class Media:
         css = {
-            "all": ['tom-select/dist/css/tom-select.bootstrap5.css',
-                    'mizdb-tomselect/css/mizselect.css'],
+            "all": ["tom-select/dist/css/tom-select.bootstrap5.css", "mizdb-tomselect/css/mizselect.css"],
         }
-        js = ['tom-select/dist/js/tom-select.complete.js',
-              'mizdb-tomselect/js/mizdb-tomselect-init.js']
+        js = ["tom-select/dist/js/tom-select.complete.js", "mizdb-tomselect/js/mizdb-tomselect-init.js"]
 
 
 class TabularMIZSelect(MIZSelect):
     """A TomSelect widget that displays results in a table with a table header."""
-    
-    def __init__(self, *args, extra_columns=None, value_field_label='ID', label_field_label='Object', **kwargs):
+
+    def __init__(self, *args, extra_columns=None, value_field_label="ID", label_field_label="Object", **kwargs):
         """
         Instantiate a TabularMIZSelect widget.
 
@@ -79,12 +80,13 @@ class TabularMIZSelect(MIZSelect):
     def build_attrs(self, base_attrs, extra_attrs=None):
         """Build HTML attributes for the widget."""
         attrs = super().build_attrs(base_attrs, extra_attrs)
-        attrs.update({
-            'is-tabular': True,
-            'data-value-field-label': self.value_field_label,
-            'data-label-field-label': self.label_field_label,
-            'data-extra-headers': json.dumps(list(self.extra_columns.values())),
-            'data-extra-columns': json.dumps(list(self.extra_columns.keys())),
-        })
+        attrs.update(
+            {
+                "is-tabular": True,
+                "data-value-field-label": self.value_field_label,
+                "data-label-field-label": self.label_field_label,
+                "data-extra-headers": json.dumps(list(self.extra_columns.values())),
+                "data-extra-columns": json.dumps(list(self.extra_columns.keys())),
+            }
+        )
         return attrs
-    

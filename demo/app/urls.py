@@ -21,7 +21,7 @@ from mizdb_tomselect.views import AutocompleteView
 from .forms import Form
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', FormView.as_view(form_class=Form, template_name="base.html"), name='demo'),
-    path('autocomplete/', AutocompleteView.as_view(), name='autocomplete')
+    path("admin/", admin.site.urls),
+    path("", FormView.as_view(form_class=Form, template_name="base.html"), name="demo"),
+    path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
 ]

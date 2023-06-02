@@ -26,62 +26,58 @@ def not_found():
 def pages():
     # Create enough data for multiple pages.
     return [
-        Ausgabe.objects.create(
-            name=f"2022-{i + 1:02}",
-            num=i + 1,
-            lnum=100 + i,
-            jahr="2022"
-        )
+        Ausgabe.objects.create(name=f"2022-{i + 1:02}", num=i + 1, lnum=100 + i, jahr="2022")
         for i in range(PAGE_SIZE * 2)
     ]
 
 
 @pytest.fixture
 def noperms_user():
-    return get_user_model().objects.create_user(username='noperms', password='bar')
+    return get_user_model().objects.create_user(username="noperms", password="bar")
 
 
 @pytest.mark.django_db
 class TestAutocompleteView:
-
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.url = reverse('autocomplete')
+        self.url = reverse("autocomplete")
         self.model_label = f"{Ausgabe._meta.app_label}.{Ausgabe._meta.model_name}"
 
     def test_get_contains_result(self, admin_client, obj):
         """The response of a search query should contain the expected result."""
-        query_string = urlencode({
-            'model': self.model_label,
-            SEARCH_VAR: 'test',
-        })
+        query_string = urlencode(
+            {
+                "model": self.model_label,
+                SEARCH_VAR: "test",
+            }
+        )
         response = admin_client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
-        assert data['results'] == list(Ausgabe.objects.filter(pk=obj.pk).values())
+        assert data["results"] == list(Ausgabe.objects.filter(pk=obj.pk).values())
 
     @pytest.mark.parametrize("page_number,has_more", [(1, True), (2, False)])
     def test_context_pagination(self, admin_client, pages, page_number, has_more):
         """The response of a search query should contain context items for pagination."""
         request_data = {
-            'model': self.model_label,
-            SEARCH_VAR: '2022',
+            "model": self.model_label,
+            SEARCH_VAR: "2022",
             PAGE_VAR: str(page_number),
         }
         response = admin_client.get(self.url, data=request_data)
         data = json.loads(response.content)
-        assert data['page'] == page_number
-        assert data['has_more'] == has_more
+        assert data["page"] == page_number
+        assert data["has_more"] == has_more
 
     def test_post_creates_new_object(self, admin_client):
         """A successful POST request should create a new model object."""
         request_data = {
-            'model': self.model_label,
-            'name': 'New Ausgabe',
-            'create-field': 'name',
+            "model": self.model_label,
+            "name": "New Ausgabe",
+            "create-field": "name",
         }
         response = admin_client.post(self.url, data=request_data)
         assert response.status_code == 200
-        assert Ausgabe.objects.filter(name='New Ausgabe').exists()
+        assert Ausgabe.objects.filter(name="New Ausgabe").exists()
 
     def test_post_context_contains_object_data(self, admin_client):
         """
@@ -89,15 +85,15 @@ class TestAutocompleteView:
         created item.
         """
         request_data = {
-            'model': self.model_label,
-            'name': 'New Ausgabe',
-            'create-field': 'name',
+            "model": self.model_label,
+            "name": "New Ausgabe",
+            "create-field": "name",
         }
         response = admin_client.post(self.url, data=request_data)
-        new = Ausgabe.objects.get(name='New Ausgabe')
+        new = Ausgabe.objects.get(name="New Ausgabe")
         data = json.loads(response.content)
-        assert data['pk'] == new.pk
-        assert data['text'] == str(new)
+        assert data["pk"] == new.pk
+        assert data["text"] == str(new)
 
     def test_post_no_permission(self, client, noperms_user):
         """
@@ -105,13 +101,13 @@ class TestAutocompleteView:
         denied.
         """
         client.force_login(noperms_user)
-        response = client.post(self.url, data={'model': self.model_label})
+        response = client.post(self.url, data={"model": self.model_label})
         assert isinstance(response, HttpResponseForbidden)
 
     def test_post_user_not_authenticated(self, client):
         """POST requests by unauthenticated users should be denied."""
         client.logout()
-        response = client.post(self.url, data={'model': self.model_label})
+        response = client.post(self.url, data={"model": self.model_label})
         assert isinstance(response, HttpResponseForbidden)
 
     def test_post_create_field_data_missing(self, admin_client):
@@ -120,9 +116,9 @@ class TestAutocompleteView:
         be denied.
         """
         request_data = {
-            'model': self.model_label,
+            "model": self.model_label,
             # 'name' is missing
-            'create-field': 'name'
+            "create-field": "name",
         }
         response = admin_client.post(self.url, data=request_data)
         assert isinstance(response, HttpResponseBadRequest)
@@ -132,14 +128,14 @@ class TestAutocompleteView:
         """Assert that requests without a CSRF token are denied."""
         client = Client(enforce_csrf_checks=True)
         client.force_login(admin_user)
-        client.get(reverse('csrf'))  # have the csrf middleware set the cookie
-        token = client.cookies['csrftoken']
+        client.get(reverse("csrf"))  # have the csrf middleware set the cookie
+        token = client.cookies["csrftoken"]
 
         request_data = {
-            'model': self.model_label,
-            'name': 'New Ausgabe',
-            'create-field': 'name',
-            'csrfmiddlewaretoken': token.coded_value if has_csrf_token else ''
+            "model": self.model_label,
+            "name": "New Ausgabe",
+            "create-field": "name",
+            "csrfmiddlewaretoken": token.coded_value if has_csrf_token else "",
         }
         response = client.post(self.url, data=request_data)
         if not has_csrf_token:

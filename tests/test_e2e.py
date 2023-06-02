@@ -12,12 +12,7 @@ pytestmark = pytest.mark.e2e
 @pytest.fixture(autouse=True)
 def data():
     return [
-        Ausgabe.objects.create(
-            name=f"2022-{i + 1:02}",
-            num=i + 1,
-            lnum=100 + i,
-            jahr="2022"
-        )
+        Ausgabe.objects.create(name=f"2022-{i + 1:02}", num=i + 1, lnum=100 + i, jahr="2022")
         for i in range(PAGE_SIZE * 3)
     ]
 
@@ -35,38 +30,38 @@ def page(page, live_server, view_name):
 
 @pytest.fixture
 def ts_wrapper(page):
-    wrapper = page.locator('.ts-wrapper')
+    wrapper = page.locator(".ts-wrapper")
     wrapper.wait_for()
     return wrapper
 
 
 @pytest.fixture
 def wrapper_focus(page, ts_wrapper):
-    with page.expect_event('requestfinished'):
+    with page.expect_event("requestfinished"):
         ts_wrapper.click()  # TODO: .focus() should work too, but it doesnt
 
 
 @pytest.fixture
 def search_input(page, wrapper_focus):
-    search_input = page.locator('.dropdown-input')
+    search_input = page.locator(".dropdown-input")
     search_input.wait_for()
     return search_input
 
 
 @pytest.fixture
 def search(page, search_input):
-    with page.expect_event('requestfinished'):
-        search_input.fill('2022')
+    with page.expect_event("requestfinished"):
+        search_input.fill("2022")
 
 
 def get_dropdown_items(page):
     """Return all elements in the dropdown."""
-    return page.locator('.ts-dropdown-content > *')
+    return page.locator(".ts-dropdown-content > *")
 
 
 def get_select_options(page):
     """Return all selectable options."""
-    return page.locator('[data-selectable][role=option]')
+    return page.locator("[data-selectable][role=option]")
 
 
 def get_last_dropdown_item(page):
@@ -74,25 +69,25 @@ def get_last_dropdown_item(page):
     for item in get_dropdown_items(page).all():
         # Have to wait for each option to be attached, otherwise
         # test_virtual_scroll fails for the 'create' view.
-        item.wait_for(state='attached')
+        item.wait_for(state="attached")
     return item
 
 
-@pytest.mark.parametrize('view_name', ['simple'])
+@pytest.mark.parametrize("view_name", ["simple"])
 def test_initially_empty(page, view_name):
     """Assert that the list of options is empty initially."""
     expect(get_dropdown_items(page)).to_have_count(0)
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('view_name', ['simple'])
+@pytest.mark.parametrize("view_name", ["simple"])
 def test_load_first_results_on_focus(page, view_name, wrapper_focus):
     """Assert that the first page of options is loaded when the select gets focus."""
     expect(get_select_options(page)).to_have_count(PAGE_SIZE)
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('view_name', ['simple', 'multiple', 'tabular', 'create'])
+@pytest.mark.parametrize("view_name", ["simple", "multiple", "tabular", "create"])
 def test_virtual_scroll(page, view_name, search, data):
     """
     Assert that the user can scroll to the bottom of the options to load more
@@ -101,21 +96,20 @@ def test_virtual_scroll(page, view_name, search, data):
     expect(get_select_options(page)).to_have_count(PAGE_SIZE)
 
     # Second page:
-    with page.expect_event('requestfinished'):
+    with page.expect_event("requestfinished"):
         get_last_dropdown_item(page).scroll_into_view_if_needed()
     expect(get_select_options(page)).to_have_count(PAGE_SIZE * 2)
 
     # Last page:
-    with page.expect_event('requestfinished'):
+    with page.expect_event("requestfinished"):
         get_last_dropdown_item(page).scroll_into_view_if_needed()
     expect(get_select_options(page)).to_have_count(len(data))
     expect(get_last_dropdown_item(page)).to_have_text("Keine weiteren Ergebnisse")
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('view_name', ['multiple'])
+@pytest.mark.parametrize("view_name", ["multiple"])
 class TestSelectMultiple:
-
     @pytest.fixture
     def select_two(self, page, search):
         """Select the first two options."""
@@ -125,12 +119,12 @@ class TestSelectMultiple:
 
     @pytest.fixture
     def ts_control(self, page):
-        return page.locator('.ts-control')
+        return page.locator(".ts-control")
 
     @pytest.fixture
     def selected(self, page, select_two, ts_control):
         """Return the locator for the selected options."""
-        return ts_control.locator('.item')
+        return ts_control.locator(".item")
 
     def test_select_multiple(self, page, selected):
         """Assert that the user can select multiple options."""
@@ -139,31 +133,30 @@ class TestSelectMultiple:
     def test_has_remove_button(self, page, selected):
         """Assert that each selected option has a remove button."""
         for option in selected.all():
-            expect(option.locator('.remove')).to_be_attached()
+            expect(option.locator(".remove")).to_be_attached()
 
     def test_has_clear_button(self, page, ts_control):
         """Assert that the ts control has a clear all button."""
-        expect(ts_control.locator('.clear-button')).to_have_count(1)
+        expect(ts_control.locator(".clear-button")).to_have_count(1)
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('view_name', ['tabular'])
+@pytest.mark.parametrize("view_name", ["tabular"])
 class TestTabularSelect:
-
     @pytest.fixture
     def dropdown_header(self, page, wrapper_focus):
         """Return the dropdown header."""
-        return page.locator('.ts-dropdown .dropdown-header')
+        return page.locator(".ts-dropdown .dropdown-header")
 
     @pytest.fixture
     def header_columns(self, page, dropdown_header):
         """Return the column divs of the dropdown header."""
-        return dropdown_header.locator('.row > *')
+        return dropdown_header.locator(".row > *")
 
     @pytest.fixture
     def option_columns(self, page, wrapper_focus):
         """Return the column divs of a select option."""
-        return get_select_options(page).first.locator('*')
+        return get_select_options(page).first.locator("*")
 
     def test_has_dropdown_header(self, page, dropdown_header):
         """Assert that the dropdown has the expected table header."""
