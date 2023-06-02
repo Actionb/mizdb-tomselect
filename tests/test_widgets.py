@@ -1,7 +1,7 @@
 import pytest
-
-from mizdb_tomselect.widgets import TabularMIZSelect, MIZSelect
 from testapp.models import Ausgabe
+
+from mizdb_tomselect.widgets import MIZSelect, TabularMIZSelect
 
 
 class WidgetTestCase:

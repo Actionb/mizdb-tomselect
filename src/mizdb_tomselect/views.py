@@ -1,5 +1,4 @@
-from django import http
-from django import views
+from django import http, views
 from django.apps import apps
 from django.contrib.auth import get_permission_codename
 

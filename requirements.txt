@@ -8,3 +8,4 @@ pytest-cov
 pytest-playwright
 playwright
 black
+ruff

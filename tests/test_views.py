@@ -3,12 +3,12 @@ from urllib.parse import urlencode
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.test import Client
 from django.urls import reverse
-
-from mizdb_tomselect.views import SEARCH_VAR, PAGE_VAR, PAGE_SIZE
 from testapp.models import Ausgabe
+
+from mizdb_tomselect.views import PAGE_SIZE, PAGE_VAR, SEARCH_VAR
 
 
 @pytest.fixture

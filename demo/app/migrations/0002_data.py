@@ -9,7 +9,7 @@ def forwards_func(apps, schema_editor):
     data.insert(
         10,
         {
-            "name": f"VERY LONG NAME THAT IS PROBABLY GOING TO CAUSE SOME PROBLEMS 2022",
+            "name": "VERY LONG NAME THAT IS PROBABLY GOING TO CAUSE SOME PROBLEMS 2022",
             "jahr": "",
             "num": "",
             "lnum": "5000000",

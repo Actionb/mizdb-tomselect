@@ -1,9 +1,9 @@
 import pytest
 from django.urls import reverse
 from playwright.sync_api import expect
+from testapp.models import Ausgabe
 
 from mizdb_tomselect.views import PAGE_SIZE
-from testapp.models import Ausgabe
 
 # Mark all tests in this module as end-to-end tests (excluded from running by default):
 pytestmark = pytest.mark.e2e

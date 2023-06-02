@@ -2,7 +2,8 @@ from django.urls import path
 from django.views.generic import FormView
 
 from mizdb_tomselect.views import AutocompleteView
-from .forms import SimpleForm, CreateForm, MultipleForm, TabularForm
+
+from .forms import CreateForm, MultipleForm, SimpleForm, TabularForm
 
 urlpatterns = [
     path("simple/", FormView.as_view(form_class=SimpleForm, template_name="base.html"), name="simple"),
