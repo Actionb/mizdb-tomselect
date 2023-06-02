@@ -17,11 +17,14 @@ class MIZSelect(forms.Select):
             model: the django model that the choices are derived from
             url: the URL pattern name of the view that serves the choices and
               handles requests from the TomSelect element
-            value_field: the name of the field that has the choice value (i.e. 'id')
-            label_field: the name of the field that contains the human-readable
-              value for a choice
-            create_field: the name of the field to use to create missing values
+            value_field: the name of the model field that corresponds to the
+              choice value of an option (f.ex. 'id')
+            label_field: the name of the model field that corresponds to the
+              human-readable value of an option (f.ex. 'name')
+            create_field: the name of the model field used to create new
+              model objects with
             multiple: if True, allow selecting multiple options
+            kwargs: additional keyword arguments passed to forms.Select
         """
         self.model = model
         self.url = url
@@ -71,6 +74,8 @@ class TabularMIZSelect(MIZSelect):
               The label is the table header label for the column.
             value_field_label: table header label for the column of the value field
             label_field_label: table header label for the column of the label field
+            args: additional positional arguments passed to MIZSelect
+            kwargs: additional keyword arguments passed to MIZSelect
         """
         super().__init__(*args, **kwargs)
         self.value_field_label = value_field_label
