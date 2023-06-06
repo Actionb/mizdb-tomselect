@@ -57,7 +57,10 @@ class TestAutocompleteView:
 
     @pytest.mark.parametrize("page_number,has_more", [(1, True), (2, False)])
     def test_context_pagination(self, admin_client, pages, page_number, has_more):
-        """The response of a search query should contain context items for pagination."""
+        """
+        The response of a search query should contain context items for
+        pagination.
+        """
         request_data = {
             "model": self.model_label,
             SEARCH_VAR: "2022",

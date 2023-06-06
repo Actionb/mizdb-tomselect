@@ -22,10 +22,10 @@ src = ["src"]
 target-version = "py311"
 line-length = 120
 select = [
-    "D",     # pydocstyle
-    "E",     # pycodestyle
-    "F",     # flake8
-    "I",     # isort
+    "D",        # pydocstyle
+    "E", "W",   # pycodestyle
+    "F",        # flake8
+    "I",        # isort
 ]
 ignore = [
     "D1",    # D1: Missing docstring error codes (because not every function and class has a docstring)
@@ -36,3 +36,6 @@ ignore = [
 
 [tool.ruff.pydocstyle]
 convention = "google"
+
+[tool.ruff.pycodestyle]
+max-doc-length = 88
