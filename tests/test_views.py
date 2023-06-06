@@ -145,3 +145,10 @@ class TestAutocompleteView:
             assert response.status_code == 403
         else:
             assert response.status_code == 200
+
+    def test_get_no_search_term(self, client):
+        """Assert that a GET request without a search term still returns results."""
+        query_string = urlencode({"model": self.model_label})
+        response = client.get(f"{self.url}?{query_string}")
+        data = json.loads(response.content)
+        assert data["results"]
