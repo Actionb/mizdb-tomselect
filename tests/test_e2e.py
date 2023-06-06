@@ -79,7 +79,7 @@ def ts_wrapper(page):
 @pytest.fixture
 def wrapper_focus(page, ts_wrapper):
     with page.expect_event("requestfinished"):
-        ts_wrapper.click()  # TODO: .focus() should work too, but it doesnt
+        ts_wrapper.click()
 
 
 @pytest.fixture

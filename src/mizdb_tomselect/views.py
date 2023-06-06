@@ -36,7 +36,6 @@ class AutocompleteView(views.generic.list.BaseListView):
         return self.order_queryset(queryset.values())
 
     def get(self, request, *args, **kwargs):
-        # TODO: check if should show create option
         q = request.GET.get(SEARCH_VAR, "")
         queryset = self.get_results(q)
         page_size = self.get_paginate_by(queryset)
