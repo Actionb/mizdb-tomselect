@@ -29,3 +29,17 @@ class CreateForm(forms.Form):
     field = forms.ModelChoiceField(
         Ausgabe.objects.all(), widget=MIZSelect(**kwargs, create_field="name"), required=False
     )
+
+
+class AddForm(forms.Form):
+    """Test form with a widget with a 'add' URL."""
+
+    field = forms.ModelChoiceField(
+        Ausgabe.objects.all(), widget=MIZSelect(**kwargs, add_url="add_page", create_field="name")
+    )
+
+
+class ChangeForm(forms.Form):
+    """Test form with a widget with a 'changelist' URL."""
+
+    field = forms.ModelChoiceField(Ausgabe.objects.all(), widget=MIZSelect(**kwargs, changelist_url="changelist_page"))

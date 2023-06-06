@@ -32,6 +32,8 @@ class TestMIZSelect(WidgetTestCase):
             label_field="num",
             create_field="the_create_field",
             multiple=True,
+            changelist_url="changelist_page",
+            add_url="add_page",
         )
         attrs = widget.build_attrs({})
         assert attrs["is-tomselect"]
@@ -41,6 +43,8 @@ class TestMIZSelect(WidgetTestCase):
         assert attrs["data-value-field"] == "pk"
         assert attrs["data-label-field"] == "num"
         assert attrs["data-create-field"] == "the_create_field"
+        assert attrs["data-changelist-url"] == "/testapp/changelist/"
+        assert attrs["data-add-url"] == "/testapp/add/"
 
     @pytest.mark.parametrize(
         "static_file",

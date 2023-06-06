@@ -10,6 +10,10 @@ def csrf_cookie_view(request):
     return HttpResponse()
 
 
+def dummy_view(request):
+    return HttpResponse()
+
+
 urlpatterns = [
     path("csrf/", csrf_cookie_view, name="csrf"),
     path("dummy/url/", lambda r: HttpResponse(), name="dummy_url"),

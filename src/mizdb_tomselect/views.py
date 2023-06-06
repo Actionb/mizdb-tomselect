@@ -30,18 +30,22 @@ class AutocompleteView(views.generic.list.BaseListView):
 
     def get_results(self, q):
         """Search for objects that match the search term and return the results."""
-        queryset = self.filter_queryset(self.get_queryset(), q).values()
-        return self.order_queryset(queryset)
+        queryset = self.get_queryset()
+        if q:
+            queryset = self.filter_queryset(queryset, q)
+        return self.order_queryset(queryset.values())
 
     def get(self, request, *args, **kwargs):
         # TODO: check if should show create option
-        queryset = self.get_results(request.GET.get(SEARCH_VAR, ""))
+        q = request.GET.get(SEARCH_VAR, "")
+        queryset = self.get_results(q)
         page_size = self.get_paginate_by(queryset)
         _, page, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
         data = {
             "results": list(page.object_list),
             "page": page.number,
             "has_more": page.has_next(),
+            "show_create_option": self.has_add_permission(request),
         }
         return http.JsonResponse(data)
 

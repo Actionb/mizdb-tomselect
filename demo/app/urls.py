@@ -18,12 +18,13 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import FormView
 
-from mizdb_tomselect.views import AutocompleteView
-
 from .forms import Form
+from .views import DemoAutocompleteView, add_view, changelist_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", FormView.as_view(form_class=Form, template_name="base.html"), name="demo"),
-    path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
+    path("autocomplete/", DemoAutocompleteView.as_view(), name="autocomplete"),
+    path("changelist/", changelist_view, name="changelist"),
+    path("add/", add_view, name="add"),
 ]

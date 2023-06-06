@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from playwright.sync_api import expect
 from testapp.models import Ausgabe
@@ -20,6 +21,46 @@ def data():
 @pytest.fixture
 def first_object(data):
     return data[0]
+
+
+@pytest.fixture(autouse=True)
+def noperms_user():
+    return get_user_model().objects.create(username="noperms", password="sadface")
+
+
+@pytest.fixture
+def user(admin_user, username):
+    """
+    Return the user with the given username.
+
+    If username is empty or 'admin', return a pytest-django admin_user.
+    """
+    if not username or username == "admin":
+        return admin_user
+    return get_user_model().objects.get(username=username)
+
+
+@pytest.fixture
+def login(client, user):
+    """Log in the given user."""
+    client.force_login(user)
+    return client
+
+
+@pytest.fixture
+def logged_in(login, context):
+    """
+    Log in a user and add the session cookie for the logged-in user to the
+    current context.
+    """
+    auth_cookie = login.cookies["sessionid"]
+    pw_cookie = {
+        "name": auth_cookie.key,
+        "value": auth_cookie.value,
+        "path": auth_cookie["path"],
+        "domain": auth_cookie["domain"] or "localhost",
+    }
+    context.add_cookies([pw_cookie])
 
 
 @pytest.fixture
@@ -191,3 +232,134 @@ class TestTabularSelect:
         expect(num_col).to_have_text(str(first_object.num))
         expect(lnum_col).to_have_class("col")
         expect(lnum_col).to_have_text(str(first_object.lnum))
+
+
+################################################################################
+# Dropdown Footer
+################################################################################
+
+
+@pytest.fixture
+def dropdown_footer(page, wrapper_focus):
+    """Return the dropdown footer."""
+    return page.locator(".dropdown-footer")
+
+
+@pytest.fixture
+def add_button(page, dropdown_footer):
+    """Return the add button in the dropdown footer."""
+    return dropdown_footer.locator(".add-btn")
+
+
+@pytest.fixture
+def changelist_button(dropdown_footer):
+    """Return the changelist button in the dropdown footer."""
+    return dropdown_footer.locator(".cl-btn")
+
+
+@pytest.mark.parametrize("view_name,has_footer", [("add", True), ("changelist", True), ("simple", False)])
+def test_has_footer(view_name, has_footer, dropdown_footer, context):
+    """
+    Assert that a footer div is added to the dropdown content if the select
+    element declares a 'changelist' URL or a 'add' URL.
+    """
+    if has_footer:
+        # Note that the footer will be attached for an 'add' URL even if the
+        # user has no 'add' permission.
+        expect(dropdown_footer).to_be_attached()
+    else:
+        expect(dropdown_footer).not_to_be_attached()
+
+
+@pytest.mark.parametrize("view_name", ["add"])
+@pytest.mark.parametrize("username", ["noperms"])
+def test_add_button_invisible_when_no_permission(
+    logged_in,
+    add_button,
+    view_name,
+    username,
+):
+    """
+    Assert that the add button is invisible if the user does not have
+    'add' permission.
+    """
+    expect(add_button).not_to_be_visible()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("view_name", ["add"])
+@pytest.mark.parametrize("username", ["admin"])
+class TestFooterAddButton:
+    def test_has_visible_add_button(self, logged_in, add_button):
+        """Assert that the dropdown footer contains a visible 'add' button."""
+        expect(add_button).to_be_visible()
+
+    def test_add_button_text_changes_on_typing(self, logged_in, page, add_button, search_input):
+        """
+        Assert that the text of the add button updates along with the user
+        typing in a search term.
+        """
+        expect(add_button).to_have_text("Hinzufügen")
+        with page.expect_event("requestfinished"):
+            search_input.fill("202")
+        expect(add_button).to_have_text("'202' hinzufügen...")
+        with page.expect_event("requestfinished"):
+            search_input.fill("2022")
+        expect(add_button).to_have_text("'2022' hinzufügen...")
+
+    def test_add_button_click_no_search_term(self, logged_in, page, add_button, live_server):
+        """
+        Assert that clicking the add button with no search term given opens the
+        'add' page in a new tab.
+        """
+
+        def requests_add_page(request):
+            """Return whether the request is for the add page."""
+            return request.url == live_server.url + reverse("add_page")
+
+        with page.expect_popup(requests_add_page):
+            add_button.click()
+
+    def test_add_button_click_with_search_term(self, logged_in, page, add_button, search_input, live_server):
+        """
+        Assert that clicking the add button with a search term given starts a
+        POST request to create a new object instead of opening the 'add' page.
+        """
+        with page.expect_request_finished():
+            search_input.fill("2022-99")
+        with page.expect_response(live_server.url + reverse("ac"), timeout=1000) as response_info:
+            add_button.click()
+        response = response_info.value
+        data = response.json()
+        assert data["text"] == "2022-99"
+        assert data["pk"]
+
+    def test_add_button_successful_creation(self, logged_in, page, add_button, search_input):
+        """
+        If the POST request to create a new object was successful, the created
+        item should be immediately selected.
+        """
+        with page.expect_request_finished():
+            search_input.fill("2022-99")
+        with page.expect_request_finished():
+            add_button.click()
+        expect(page.locator(".ts-control .item")).to_have_text("2022-99")
+        expect(page.locator(".dropdown-content")).not_to_be_visible()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("view_name", ["changelist"])
+class TestFooterChangelistButton:
+    def test_has_visible_changelist_button(self, changelist_button):
+        """Assert that the dropdown footer contains a visible 'changelist' button."""
+        expect(changelist_button).to_be_visible()
+
+    def test_changelist_query_string_contains_search_term(self, page, changelist_button, search_input):
+        """
+        Assert that the URL to the changelist contains the current search term
+        in the query string.
+        """
+        assert changelist_button.get_attribute("href") == reverse("changelist_page")
+        with page.expect_request_finished():
+            search_input.fill("2022")
+        assert "q=2022" in changelist_button.get_attribute("href")
