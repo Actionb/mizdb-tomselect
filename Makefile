@@ -11,8 +11,10 @@ test:
 reformat:
 	ruff check . --fix
 	black .
+	standard src/ --fix
 
 .PHONY: lint
 lint:
 	ruff . --no-fix
 	black . --check
+	standard src/
