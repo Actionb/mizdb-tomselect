@@ -5,6 +5,7 @@ Autocomplete widgets and views using TomSelect for the MIZDB app.
 ## Usage
 
 Configure an endpoint for autocomplete requests:
+
 ```python
 # urls.py
 from django.urls import path
@@ -18,6 +19,7 @@ urlpatterns = [
 ```
 
 Use the widgets:
+
 ```python
 from django import forms
 
@@ -29,10 +31,11 @@ class MyForm(forms.Form):
     mizselect = forms.ModelChoiceField(
         MyModel.objects.all(),
         widget=MIZSelect(
-            MyModel, 
+            MyModel,
             url='my_autocomplete_view',
         ),
     )
+    # Display results in a table, optionally with additional columns:
     mizselect_tabular = forms.ModelChoiceField(
         MyModel.objects.all(),
         widget=TabularMIZSelect(
@@ -47,6 +50,37 @@ class MyForm(forms.Form):
     )
 ```
 
+### Option creation / add page link
+
+The dropdown will include an 'Add' button if you pass the URL pattern name for
+the add page of the given model to the widget:
+
+```python
+widget = MIZSelect(MyModel, url='my_autocomplete_view', add_url='my_model_add')
+```
+
+Clicking on that button sends the user to the add page of the model.
+
+If `create_field` was also passed to the widget, clicking on the button will
+create a new object using an AJAX POST request to the autocomplete URL. The
+autocomplete view will use the search term that the user put in on the
+`create_field` to create the object:
+
+```python
+self.model.objects.create(**{self.create_field: data[self.create_field]})
+```
+
+Override the view's `create_object` method to alter the creation process.
+
+### Changelist link
+
+The dropdown will include a link to the changelist of the given model if you
+pass in the URL pattern name for the changelist.
+
+```python
+widget = MIZSelect(MyModel, url='my_autocomplete_view', changelist_url='my_model_changelist')
+```
+
 ## Development & Demo
 
 ```bash
@@ -55,5 +89,6 @@ source venv/bin/activate
 pip install -e .
 pip install -r requirements.txt
 ```
+
 Then see the demo for a preview: `python demo/manage.py runserver`
 
