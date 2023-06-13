@@ -11,10 +11,14 @@ test:
 reformat:
 	ruff check . --fix
 	black .
-	standard src/ --fix
+	standard client/ --fix
 
 .PHONY: lint
 lint:
 	ruff . --no-fix
 	black . --check
-	standard src/
+	standard client/
+
+.PHONY: build
+build:
+	npm run build

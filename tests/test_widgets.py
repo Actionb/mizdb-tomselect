@@ -48,7 +48,7 @@ class TestMIZSelect(WidgetTestCase):
 
     @pytest.mark.parametrize(
         "static_file",
-        ("mizselect.css", "tom-select.bootstrap5.css", "mizdb-tomselect-init.js", "tom-select.complete.js"),
+        ("mizselect.css", "tom-select.bootstrap5.css", "mizselect.js"),
     )
     def test_media(self, static_file):
         """Assert that the necessary static files are included."""

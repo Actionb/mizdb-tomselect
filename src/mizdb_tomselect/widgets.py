@@ -87,7 +87,7 @@ class MIZSelect(forms.Select):
         css = {
             "all": ["tom-select/dist/css/tom-select.bootstrap5.css", "mizdb-tomselect/css/mizselect.css"],
         }
-        js = ["tom-select/dist/js/tom-select.complete.js", "mizdb-tomselect/js/mizdb-tomselect-init.js"]
+        js = ["mizdb-tomselect/js/mizselect.js"]
 
 
 class TabularMIZSelect(MIZSelect):
