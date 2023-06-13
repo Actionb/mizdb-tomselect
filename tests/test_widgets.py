@@ -1,7 +1,7 @@
 import pytest
 from testapp.models import Ausgabe
 
-from mizdb_tomselect.widgets import MIZSelect, TabularMIZSelect
+from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
 
 
 class WidgetTestCase:
@@ -56,7 +56,7 @@ class TestMIZSelect(WidgetTestCase):
 
 
 class TestTabularMIZSelect(WidgetTestCase):
-    widget_class = TabularMIZSelect
+    widget_class = MIZSelectTabular
 
     def test_build_attrs(self):
         """Assert that the required HTML attributes are added."""

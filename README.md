@@ -26,7 +26,7 @@ Use the widgets:
 ```python
 from django import forms
 
-from mizdb_tomselect.widgets import MIZSelect, TabularMIZSelect
+from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
 from .models import MyModel
 
 
@@ -38,11 +38,11 @@ class MyForm(forms.Form):
             url='my_autocomplete_view',
         ),
     )
-    
+
     # Display results in a table, optionally with additional columns:
     mizselect_tabular = forms.ModelChoiceField(
         MyModel.objects.all(),
-        widget=TabularMIZSelect(
+        widget=MIZSelectTabular(
             MyModel,
             url='my_autocomplete_view',
             # extra_columns is a mapping of model field: column header label for extra columns

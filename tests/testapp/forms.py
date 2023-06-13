@@ -1,6 +1,6 @@
 from django import forms
 
-from mizdb_tomselect.widgets import MIZSelect, TabularMIZSelect
+from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
 
 from .models import Ausgabe
 
@@ -18,7 +18,7 @@ class MultipleForm(forms.Form):
 class TabularForm(forms.Form):
     field = forms.ModelChoiceField(
         Ausgabe.objects.all(),
-        widget=TabularMIZSelect(
+        widget=MIZSelectTabular(
             **kwargs, extra_columns={"jahr": "Jahr", "num": "Nummer", "lnum": "lfd.Nummer"}, label_field_label="Ausgabe"
         ),
         required=False,

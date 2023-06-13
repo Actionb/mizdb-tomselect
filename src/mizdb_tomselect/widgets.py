@@ -95,12 +95,12 @@ class MIZSelect(forms.Select):
         js = ["mizdb-tomselect/js/mizselect.js"]
 
 
-class TabularMIZSelect(MIZSelect):
+class MIZSelectTabular(MIZSelect):
     """A MIZSelect widget that displays results in a table with a table header."""
 
     def __init__(self, *args, extra_columns=None, value_field_label="ID", label_field_label="Object", **kwargs):
         """
-        Instantiate a TabularMIZSelect widget.
+        Instantiate a MIZSelectTabular widget.
 
         Args:
             extra_columns: a mapping of <model field names> to <column labels>
