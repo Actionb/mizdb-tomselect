@@ -63,51 +63,53 @@ def logged_in(login, context):
     context.add_cookies([pw_cookie])
 
 
+# NOTE: must not override original page fixture or tests can't be run against
+# multiple browsers
 @pytest.fixture
-def page(page, live_server, view_name):
+def _page(page, live_server, view_name):
     page.goto(live_server.url + reverse(view_name))
     return page
 
 
 @pytest.fixture
-def ts_wrapper(page):
-    wrapper = page.locator(".ts-wrapper")
+def ts_wrapper(_page):
+    wrapper = _page.locator(".ts-wrapper")
     wrapper.wait_for()
     return wrapper
 
 
 @pytest.fixture
-def wrapper_focus(page, ts_wrapper):
-    with page.expect_event("requestfinished"):
+def wrapper_focus(_page, ts_wrapper):
+    with _page.expect_event("requestfinished"):
         ts_wrapper.click()
 
 
 @pytest.fixture
-def search_input(page, wrapper_focus):
-    search_input = page.locator(".dropdown-input")
+def search_input(_page, wrapper_focus):
+    search_input = _page.locator(".dropdown-input")
     search_input.wait_for()
     return search_input
 
 
 @pytest.fixture
-def search(page, search_input):
-    with page.expect_event("requestfinished"):
+def search(_page, search_input):
+    with _page.expect_event("requestfinished"):
         search_input.fill("2022")
 
 
-def get_dropdown_items(page):
+def get_dropdown_items(_page):
     """Return all elements in the dropdown."""
-    return page.locator(".ts-dropdown-content > *")
+    return _page.locator(".ts-dropdown-content > *")
 
 
-def get_select_options(page):
+def get_select_options(_page):
     """Return all selectable options."""
-    return page.locator("[data-selectable][role=option]")
+    return _page.locator("[data-selectable][role=option]")
 
 
-def get_last_dropdown_item(page):
+def get_last_dropdown_item(_page):
     item = None
-    for item in get_dropdown_items(page).all():
+    for item in get_dropdown_items(_page).all():
         # Have to wait for each option to be attached, otherwise
         # test_virtual_scroll fails for the 'create' view.
         item.wait_for(state="attached")
@@ -115,68 +117,68 @@ def get_last_dropdown_item(page):
 
 
 @pytest.mark.parametrize("view_name", ["simple"])
-def test_initially_empty(page, view_name):
+def test_initially_empty(_page, view_name):
     """Assert that the list of options is empty initially."""
-    expect(get_dropdown_items(page)).to_have_count(0)
+    expect(get_dropdown_items(_page)).to_have_count(0)
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name", ["simple"])
-def test_load_first_results_on_focus(page, view_name, wrapper_focus):
-    """Assert that the first page of options is loaded when the select gets focus."""
-    expect(get_select_options(page)).to_have_count(PAGE_SIZE)
+def test_load_first_results_on_focus(_page, view_name, wrapper_focus):
+    """Assert that the first _page of options is loaded when the select gets focus."""
+    expect(get_select_options(_page)).to_have_count(PAGE_SIZE)
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name", ["simple", "multiple", "tabular", "create"])
-def test_virtual_scroll(page, view_name, search, data):
+def test_virtual_scroll(_page, view_name, search, data):
     """
     Assert that the user can scroll to the bottom of the options to load more
     options from the backend until there are no more search results to load.
     """
-    expect(get_select_options(page)).to_have_count(PAGE_SIZE)
+    expect(get_select_options(_page)).to_have_count(PAGE_SIZE)
 
-    # Second page:
-    with page.expect_event("requestfinished"):
-        get_last_dropdown_item(page).scroll_into_view_if_needed()
-    expect(get_select_options(page)).to_have_count(PAGE_SIZE * 2)
+    # Second _page:
+    with _page.expect_event("requestfinished"):
+        get_last_dropdown_item(_page).scroll_into_view_if_needed()
+    expect(get_select_options(_page)).to_have_count(PAGE_SIZE * 2)
 
-    # Last page:
-    with page.expect_event("requestfinished"):
-        get_last_dropdown_item(page).scroll_into_view_if_needed()
-    expect(get_select_options(page)).to_have_count(len(data))
-    expect(get_last_dropdown_item(page)).to_have_text("Keine weiteren Ergebnisse")
+    # Last _page:
+    with _page.expect_event("requestfinished"):
+        get_last_dropdown_item(_page).scroll_into_view_if_needed()
+    expect(get_select_options(_page)).to_have_count(len(data))
+    expect(get_last_dropdown_item(_page)).to_have_text("Keine weiteren Ergebnisse")
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name", ["multiple"])
 class TestSelectMultiple:
     @pytest.fixture
-    def select_two(self, page, search):
+    def select_two(self, _page, search):
         """Select the first two options."""
-        options = get_select_options(page).all()
+        options = get_select_options(_page).all()
         options[0].click()
         options[1].click()
 
     @pytest.fixture
-    def ts_control(self, page):
-        return page.locator(".ts-control")
+    def ts_control(self, _page):
+        return _page.locator(".ts-control")
 
     @pytest.fixture
-    def selected(self, page, select_two, ts_control):
+    def selected(self, _page, select_two, ts_control):
         """Return the locator for the selected options."""
         return ts_control.locator(".item")
 
-    def test_select_multiple(self, page, selected):
+    def test_select_multiple(self, _page, selected):
         """Assert that the user can select multiple options."""
         expect(selected).to_have_count(2)
 
-    def test_has_remove_button(self, page, selected):
+    def test_has_remove_button(self, _page, selected):
         """Assert that each selected option has a remove button."""
         for option in selected.all():
             expect(option.locator(".remove")).to_be_attached()
 
-    def test_has_clear_button(self, page, ts_control):
+    def test_has_clear_button(self, _page, ts_control):
         """Assert that the ts control has a clear all button."""
         expect(ts_control.locator(".clear-button")).to_have_count(1)
 
@@ -185,25 +187,25 @@ class TestSelectMultiple:
 @pytest.mark.parametrize("view_name", ["tabular"])
 class TestTabularSelect:
     @pytest.fixture
-    def dropdown_header(self, page, wrapper_focus):
+    def dropdown_header(self, _page, wrapper_focus):
         """Return the dropdown header."""
-        return page.locator(".ts-dropdown .dropdown-header")
+        return _page.locator(".ts-dropdown .dropdown-header")
 
     @pytest.fixture
-    def header_columns(self, page, dropdown_header):
+    def header_columns(self, _page, dropdown_header):
         """Return the column divs of the dropdown header."""
         return dropdown_header.locator(".row > *")
 
     @pytest.fixture
-    def option_columns(self, page, wrapper_focus):
+    def option_columns(self, _page, wrapper_focus):
         """Return the column divs of a select option."""
-        return get_select_options(page).first.locator("*")
+        return get_select_options(_page).first.locator("*")
 
-    def test_has_dropdown_header(self, page, dropdown_header):
+    def test_has_dropdown_header(self, _page, dropdown_header):
         """Assert that the dropdown has the expected table header."""
         expect(dropdown_header).to_be_attached()
 
-    def test_header_columns(self, page, header_columns):
+    def test_header_columns(self, _page, header_columns):
         """Assert that the dropdown header has the expected columns."""
         expect(header_columns).to_have_count(5)
         id_col, label_col, jahr_col, num_col, lnum_col = header_columns.all()
@@ -218,7 +220,7 @@ class TestTabularSelect:
         expect(lnum_col).to_have_class("col")
         expect(lnum_col).to_have_text("lfd.Nummer")
 
-    def test_options_have_columns(self, page, option_columns, first_object):
+    def test_options_have_columns(self, _page, option_columns, first_object):
         """Assert that the data of the options are assigned to columns."""
         expect(option_columns).to_have_count(5)
         id_col, label_col, jahr_col, num_col, lnum_col = option_columns.all()
@@ -240,13 +242,13 @@ class TestTabularSelect:
 
 
 @pytest.fixture
-def dropdown_footer(page, wrapper_focus):
+def dropdown_footer(_page, wrapper_focus):
     """Return the dropdown footer."""
-    return page.locator(".dropdown-footer")
+    return _page.locator(".dropdown-footer")
 
 
 @pytest.fixture
-def add_button(page, dropdown_footer):
+def add_button(_page, dropdown_footer):
     """Return the add button in the dropdown footer."""
     return dropdown_footer.locator(".add-btn")
 
@@ -294,57 +296,57 @@ class TestFooterAddButton:
         """Assert that the dropdown footer contains a visible 'add' button."""
         expect(add_button).to_be_visible()
 
-    def test_add_button_text_changes_on_typing(self, logged_in, page, add_button, search_input):
+    def test_add_button_text_changes_on_typing(self, logged_in, _page, add_button, search_input):
         """
         Assert that the text of the add button updates along with the user
         typing in a search term.
         """
         expect(add_button).to_have_text("Hinzufügen")
-        with page.expect_event("requestfinished"):
+        with _page.expect_event("requestfinished"):
             search_input.fill("202")
         expect(add_button).to_have_text("'202' hinzufügen...")
-        with page.expect_event("requestfinished"):
+        with _page.expect_event("requestfinished"):
             search_input.fill("2022")
         expect(add_button).to_have_text("'2022' hinzufügen...")
 
-    def test_add_button_click_no_search_term(self, logged_in, page, add_button, live_server):
+    def test_add_button_click_no_search_term(self, logged_in, _page, add_button, live_server):
         """
         Assert that clicking the add button with no search term given opens the
-        'add' page in a new tab.
+        'add' _page in a new tab.
         """
 
         def requests_add_page(request):
-            """Return whether the request is for the add page."""
+            """Return whether the request is for the add _page."""
             return request.url == live_server.url + reverse("add_page")
 
-        with page.expect_popup(requests_add_page):
+        with _page.expect_popup(requests_add_page):
             add_button.click()
 
-    def test_add_button_click_with_search_term(self, logged_in, page, add_button, search_input, live_server):
+    def test_add_button_click_with_search_term(self, logged_in, _page, add_button, search_input, live_server):
         """
         Assert that clicking the add button with a search term given starts a
-        POST request to create a new object instead of opening the 'add' page.
+        POST request to create a new object instead of opening the 'add' _page.
         """
-        with page.expect_request_finished():
+        with _page.expect_request_finished():
             search_input.fill("2022-99")
-        with page.expect_response(live_server.url + reverse("ac"), timeout=1000) as response_info:
+        with _page.expect_response(live_server.url + reverse("ac"), timeout=1000) as response_info:
             add_button.click()
         response = response_info.value
         data = response.json()
         assert data["text"] == "2022-99"
         assert data["pk"]
 
-    def test_add_button_successful_creation(self, logged_in, page, add_button, search_input):
+    def test_add_button_successful_creation(self, logged_in, _page, add_button, search_input):
         """
         If the POST request to create a new object was successful, the created
         item should be immediately selected.
         """
-        with page.expect_request_finished():
+        with _page.expect_request_finished():
             search_input.fill("2022-99")
-        with page.expect_request_finished():
+        with _page.expect_request_finished():
             add_button.click()
-        expect(page.locator(".ts-control .item")).to_have_text("2022-99")
-        expect(page.locator(".dropdown-content")).not_to_be_visible()
+        expect(_page.locator(".ts-control .item")).to_have_text("2022-99")
+        expect(_page.locator(".dropdown-content")).not_to_be_visible()
 
 
 @pytest.mark.django_db
@@ -354,12 +356,12 @@ class TestFooterChangelistButton:
         """Assert that the dropdown footer contains a visible 'changelist' button."""
         expect(changelist_button).to_be_visible()
 
-    def test_changelist_query_string_contains_search_term(self, page, changelist_button, search_input):
+    def test_changelist_query_string_contains_search_term(self, _page, changelist_button, search_input):
         """
         Assert that the URL to the changelist contains the current search term
         in the query string.
         """
         assert changelist_button.get_attribute("href") == reverse("changelist_page")
-        with page.expect_request_finished():
+        with _page.expect_request_finished():
             search_input.fill("2022")
         assert "q=2022" in changelist_button.get_attribute("href")
