@@ -5,7 +5,12 @@ from django.urls import reverse
 
 
 class MIZSelect(forms.Select):
-    """A select widget for TomSelect with model object choices."""
+    """
+    A TomSelect widget with model object choices.
+
+    The TomSelect element will be configured using custom data attributes on
+    the select element, which are provided by the widget's `build_attrs` method.
+    """
 
     def __init__(
         self,
@@ -91,18 +96,19 @@ class MIZSelect(forms.Select):
 
 
 class TabularMIZSelect(MIZSelect):
-    """A TomSelect widget that displays results in a table with a table header."""
+    """A MIZSelect widget that displays results in a table with a table header."""
 
     def __init__(self, *args, extra_columns=None, value_field_label="ID", label_field_label="Object", **kwargs):
         """
         Instantiate a TabularMIZSelect widget.
 
         Args:
-            extra_columns: a mapping of field names to column labels.
-              The field name tells TomSelect what values to look up on a result.
-              The label is the table header label for the column.
-            value_field_label: table header label for the column of the value field
-            label_field_label: table header label for the column of the label field
+            extra_columns: a mapping of <model field names> to <column labels>
+              for additional columns. The field name tells TomSelect what
+              values to look up on a model object result for a given column.
+              The label is the table header label for a given column.
+            value_field_label: table header label for the value field column
+            label_field_label: table header label for the label field column
             args: additional positional arguments passed to MIZSelect
             kwargs: additional keyword arguments passed to MIZSelect
         """

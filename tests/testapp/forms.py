@@ -4,7 +4,7 @@ from mizdb_tomselect.widgets import MIZSelect, TabularMIZSelect
 
 from .models import Ausgabe
 
-kwargs = {"model": Ausgabe, "url": "ac", "attrs": {"testid": "mizselect"}}
+kwargs = {"model": Ausgabe, "url": "ac"}
 
 
 class SimpleForm(forms.Form):
