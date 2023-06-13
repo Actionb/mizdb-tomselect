@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="project_files" pattern="file[mizdb-tomselect]:src//*||file[mizdb-tomselect]:tests//*||file[mizdb-tomselect]:demo//*||file[mizdb-tomselect]:client//*" />
+</component>
