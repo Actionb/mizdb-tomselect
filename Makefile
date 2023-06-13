@@ -22,3 +22,4 @@ lint:
 .PHONY: build
 build:
 	npm run build
+	python3 -m build

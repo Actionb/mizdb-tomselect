@@ -9,3 +9,5 @@ pytest-playwright
 playwright
 black
 ruff
+build
+twine
