@@ -23,3 +23,9 @@ lint:
 build:
 	npm run build
 	python3 -m build
+
+.PHONY: init
+init:
+	pip install -e .
+	pip install -r requirements.txt
+	npm install --include=dev

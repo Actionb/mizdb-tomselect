@@ -116,9 +116,7 @@ widget = MIZSelect(MyModel, url='my_autocomplete_view', changelist_url='my_model
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -e .
-pip install -r requirements.txt
-npm install  --include=dev
+make init
 ```
 
 Then see the demo for a preview: `python demo/manage.py runserver`
