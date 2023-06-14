@@ -90,9 +90,9 @@ class MIZSelect(forms.Select):
 
     class Media:
         css = {
-            "all": ["tom-select/dist/css/tom-select.bootstrap5.css", "mizdb-tomselect/css/mizselect.css"],
+            "all": ["tom-select/dist/css/tom-select.bootstrap5.css", "mizdb_tomselect/css/mizselect.css"],
         }
-        js = ["mizdb-tomselect/js/mizselect.js"]
+        js = ["mizdb_tomselect/js/mizselect.js"]
 
 
 class MIZSelectTabular(MIZSelect):
