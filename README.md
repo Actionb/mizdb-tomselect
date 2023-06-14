@@ -1,4 +1,4 @@
-# TomSelect for MIZDB
+# TomSelect for Django (MIZDB)
 
 Django autocomplete widgets and views using [TomSelect](https://tom-select.js.org/).
 

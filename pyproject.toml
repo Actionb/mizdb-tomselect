@@ -11,6 +11,13 @@ authors = [
 description = "Django autocomplete widgets and views using TomSelect"
 readme = "README.md"
 requires-python = ">=3.9"
+dependencies = [
+    "Django"
+]
+classifiers = [
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
