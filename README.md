@@ -118,7 +118,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -e .
 pip install -r requirements.txt
-npm install
+npm install  --include=dev
 ```
 
 Then see the demo for a preview: `python demo/manage.py runserver`
