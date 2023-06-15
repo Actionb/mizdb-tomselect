@@ -7,6 +7,19 @@ Note that this library was written specifically with the [MIZDB](https://github.
 ----
 ## Usage
 
+Install:
+```bash
+pip install -U mizdb_tomselect
+```
+
+Add to installed apps:
+```python
+INSTALLED_APPS = [
+    ...,
+    "mizdb_tomselect"
+]
+```
+
 Configure an endpoint for autocomplete requests:
 
 ```python
@@ -21,7 +34,7 @@ urlpatterns = [
 ]
 ```
 
-Use the widgets:
+Use the widgets in a form:
 
 ```python
 from django import forms
@@ -52,6 +65,29 @@ class MyForm(forms.Form):
             label_field_label='My Model Objects',
         ),
     )
+```
+
+Make sure to include [bootstrap](https://getbootstrap.com/docs/5.2/getting-started/download/) somewhere. For example in the template:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIZDB TomSelect Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    {{ form.media }}
+</head>
+<body>
+<div class="container">
+    <form>
+        {% csrf_token %}
+        {{ form.as_div }}
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+</body>
+</html>
 ```
 
 ----
