@@ -33,7 +33,7 @@ function getSettings (elem) {
     controlInput: '<input class="form-control mb-1"/>',
     // Pad the dropdown to make it appear in a neat box:
     dropdownClass: 'ts-dropdown p-2',
-    maxItems: elem.hasAttribute('is-multiple') ? 10 : null,
+    maxItems: elem.hasAttribute('is-multiple') ? null : 1,
 
     valueField: elem.dataset.valueField,
     labelField: elem.dataset.labelField,
