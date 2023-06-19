@@ -22,6 +22,7 @@ class MIZSelect(forms.Select):
         multiple=False,
         changelist_url="",
         add_url="",
+        filter_by=(),
         **kwargs,
     ):
         """
@@ -40,6 +41,10 @@ class MIZSelect(forms.Select):
             multiple: if True, allow selecting multiple options
             changelist_url: URL name of the changelist for this model
             add_url: URL name for the add page of this model
+            filter_by: a 2-tuple (form_field_name, field_lookup) to filter the
+              results against the value of the form field using the given
+              Django field lookup. For example:
+               ('foo', 'bar__id') => results.filter(bar__id=data['foo'])
             kwargs: additional keyword arguments passed to forms.Select
         """
         self.model = model
@@ -50,6 +55,7 @@ class MIZSelect(forms.Select):
         self.multiple = multiple
         self.changelist_url = changelist_url
         self.add_url = add_url
+        self.filter_by = filter_by
         super().__init__(**kwargs)
 
     def optgroups(self, name, value, attrs=None):
@@ -84,6 +90,7 @@ class MIZSelect(forms.Select):
                 "data-create-field": self.create_field,
                 "data-changelist-url": self.get_changelist_url() or "",
                 "data-add-url": self.get_add_url() or "",
+                "data-filter-by": json.dumps(list(self.filter_by)),
             }
         )
         return attrs

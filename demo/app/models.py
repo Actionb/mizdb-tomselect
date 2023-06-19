@@ -14,6 +14,8 @@ class Ausgabe(models.Model):
     num = models.CharField("Nummer", max_length=50)
     lnum = models.CharField("lfd.Nummer", max_length=50)
 
+    magazin = models.ForeignKey("Magazin", on_delete=models.SET_NULL, blank=True, null=True)
+
     objects = SearchQueryset.as_manager()
 
     class Meta:
@@ -22,3 +24,14 @@ class Ausgabe(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Magazin(models.Model):
+    name = models.CharField("Magazin Name", max_length=50)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Magazin"
+        verbose_name_plural = "Magazine"

@@ -8,7 +8,7 @@ from django.test import Client
 from django.urls import reverse
 from testapp.models import Ausgabe
 
-from mizdb_tomselect.views import PAGE_SIZE, PAGE_VAR, SEARCH_VAR
+from mizdb_tomselect.views import FILTERBY_VAR, PAGE_SIZE, PAGE_VAR, SEARCH_VAR
 
 
 @pytest.fixture
@@ -152,3 +152,24 @@ class TestAutocompleteView:
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
         assert data["results"]
+
+    def test_get_with_filter_by(self, client, obj):
+        """
+        Assert that a GET request with a filterBy value returns the expected
+        results.
+        """
+        query_string = urlencode({"model": self.model_label, FILTERBY_VAR: "lnum=2"})
+        response = client.get(f"{self.url}?{query_string}")
+        data = json.loads(response.content)
+        assert len(data["results"]) == 1
+        assert data["results"][0]["id"] == obj.pk
+
+    def test_get_no_filter_by(self, client):
+        """
+        Assert that a GET request returns no results when a required filterBy
+        has no value.
+        """
+        query_string = urlencode({"model": self.model_label, FILTERBY_VAR: "lnum="})
+        response = client.get(f"{self.url}?{query_string}")
+        data = json.loads(response.content)
+        assert not data["results"]

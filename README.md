@@ -146,6 +146,32 @@ urlpatterns = [
 widget = MIZSelect(MyModel, url='my_autocomplete_view', changelist_url='my_model_changelist')
 ```
 
+### Filter against values of another field
+
+Use the `filter_by` argument to restrict the available options to the value of 
+another field. The parameter must be a 2-tuple: `(name_of_the_other_form_field, django_field_lookup)`
+```python
+# models.py
+class Pizza(models.Model):
+    best_topping = models.ForeignKey("Topping", on_delete=models.SET_NULL)
+    
+class Topping(models.Model):
+    ...
+
+# forms.py
+class MyForm(forms.Form):
+    topping = forms.ModelChoiceField(queryset=Toppings.objects.all())
+    pizza = forms.ModelChoiceField(
+        queryset=Pizza.objects.all(),
+        wiget=MIZSelect(
+            Pizza,
+            filter_by=("topping", "best_topping_id")
+        )
+    )
+```
+This will result in the Pizza result queryset to be filtered against 
+`best_topping_id` with the current value of the `topping` formfield.
+
 ----
 ## Development & Demo
 

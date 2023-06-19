@@ -2,7 +2,7 @@ from django import forms
 
 from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
 
-from .models import Ausgabe
+from .models import Ausgabe, Magazin
 
 
 class Form(forms.Form):
@@ -51,6 +51,22 @@ class Form(forms.Form):
             attrs={"class": "form-control mb-3"},
             add_url="add",
             create_field="name",
+        ),
+        required=False,
+    )
+
+
+class FilteredForm(forms.Form):
+    magazin = forms.ModelChoiceField(queryset=Magazin.objects.all(), widget=MIZSelect(Magazin))
+    ausgabe = forms.ModelChoiceField(
+        Ausgabe.objects.all(),
+        widget=MIZSelect(
+            Ausgabe,
+            attrs={"class": "form-control mb-3"},
+            changelist_url="changelist",
+            add_url="add",
+            create_field="name",
+            filter_by=("magazin", "magazin_id"),
         ),
         required=False,
     )

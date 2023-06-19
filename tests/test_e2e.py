@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from playwright.sync_api import expect
-from testapp.models import Ausgabe
+from testapp.models import Ausgabe, Magazin
 
 from mizdb_tomselect.views import PAGE_SIZE
 
@@ -10,10 +10,20 @@ from mizdb_tomselect.views import PAGE_SIZE
 pytestmark = pytest.mark.e2e
 
 
+@pytest.fixture
+def magazin():
+    return Magazin.objects.create(name="Testmagazin")
+
+
 @pytest.fixture(autouse=True)
-def data():
+def other_magazin():
+    return Magazin.objects.create(name="Other")
+
+
+@pytest.fixture(autouse=True)  # TODO: is autouse=True necessary?
+def data(magazin):
     return [
-        Ausgabe.objects.create(name=f"2022-{i + 1:02}", num=i + 1, lnum=100 + i, jahr="2022")
+        Ausgabe.objects.create(name=f"2022-{i + 1:02}", num=i + 1, lnum=100 + i, jahr="2022", magazin=magazin)
         for i in range(PAGE_SIZE * 3)
     ]
 
@@ -365,3 +375,28 @@ class TestFooterChangelistButton:
         with _page.expect_request_finished():
             search_input.fill("2022")
         assert "q=2022" in changelist_button.get_attribute("href")
+
+
+@pytest.fixture
+def magazin_select(_page):
+    select = _page.get_by_label("Magazin")
+    select.wait_for()
+    return select
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("view_name", ["filtered"])
+def test_options_filtered(_page, magazin_select, magazin, other_magazin, ts_wrapper):
+    """
+    Assert that the options of the 'ausgabe' field are filtered with the values
+    of the forwarded field 'magazin'.
+    """
+    magazin_select.select_option(value=str(other_magazin.pk))
+    with _page.expect_request_finished():
+        ts_wrapper.click()
+    expect(get_select_options(_page)).to_have_count(0)
+    magazin_select.focus()
+    magazin_select.select_option(value=str(magazin.pk))
+    with _page.expect_request_finished():
+        ts_wrapper.click()
+    expect(get_select_options(_page)).not_to_have_count(0)

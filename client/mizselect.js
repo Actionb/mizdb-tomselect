@@ -14,6 +14,32 @@ TomSelect.define('dropdown_input', dropdown_input)
 TomSelect.define('remove_button', remove_button)
 TomSelect.define('virtual_scroll', virtual_scroll)
 
+/**
+ * Extract the form prefix from the name of the given element.
+ */
+function getFormPrefix (elem) {
+  const parts = elem.getAttribute('name').split('-').slice(0, -1)
+  if (parts.length) {
+    return parts.join('-') + '-'
+  }
+  return ''
+}
+
+/**
+ * Walk through the given (form) prefixes and return the first element
+ * matching prefix + name.
+ **/
+function getElementByPrefixedName (name, prefixes) {
+  const _prefixes = prefixes || []
+  _prefixes.push('')
+  for (let i = 0; i < _prefixes.length; i++) {
+    const element = document.querySelector(`[name=${prefixes[i] + name}]`)
+    if (element) {
+      return element
+    }
+  }
+}
+
 function getSettings (elem) {
   function buildUrl (query, page) {
     const params = new URLSearchParams({
@@ -21,10 +47,18 @@ function getSettings (elem) {
       p: page,
       model: encodeURIComponent(elem.dataset.model)
     })
+    if (elem.filterByElem) {
+      params.append('f', `${elem.filterByLookup}=${elem.filterByElem.value}`)
+    }
     return `${elem.dataset.autocompleteUrl}?${params.toString()}`
   }
   elem.extraColumns = elem.hasAttribute('is-tabular') ? JSON.parse(elem.dataset.extraColumns) : ''
   elem.labelColClass = elem.extraColumns.length > 0 && elem.extraColumns.length < 4 ? 'col-5' : 'col'
+  if (elem.dataset.filterBy) {
+    const filterBy = JSON.parse(elem.dataset.filterBy)
+    elem.filterByElem = getElementByPrefixedName(filterBy[0], [getFormPrefix(elem)])
+    elem.filterByLookup = filterBy[1]
+  }
   return {
     preload: 'focus',
     maxOptions: null,
@@ -158,6 +192,7 @@ function attachFooter (ts, elem) {
           addBtn.innerHTML = 'Hinzufügen'
         }
       })
+      ts.on('blur', () => { addBtn.innerHTML = 'Hinzufügen' })
 
       // If given a create field, try adding new model objects via AJAX request.
       const createField = elem.dataset.createField
@@ -205,6 +240,7 @@ function attachFooter (ts, elem) {
       changelistLink.innerHTML = 'Änderungsliste'
       footer.appendChild(changelistLink)
       ts.on('type', (query) => {
+        // TODO: include value of filterBy in query
         if (query) {
           // Update the URL to the changelist to include the query
           const queryString = new URLSearchParams({ q: encodeURIComponent(query) }).toString()
@@ -213,6 +249,7 @@ function attachFooter (ts, elem) {
           changelistLink.href = changelistURL
         }
       })
+      ts.on('blur', () => { changelistLink.href = changelistURL })
     }
 
     ts.dropdown.appendChild(footer)
@@ -231,5 +268,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
         ts.refreshOptions()
       }
     })
+    if (elem.filterByElem) {
+      // Force re-fetching the options when the value of the filterBy element
+      // changes.
+      elem.filterByElem.addEventListener('change', () => {
+        // Reset the pagination (query:url) mapping of the virtual_scroll
+        // plugin. This is necessary because the filter value is not part of
+        // the query string, which means that the mapping might return an URL
+        // that is incorrect for the current filter.
+        ts.getUrl(null)
+        // Clear all options, but leave the selected items.
+        ts.clearOptions()
+        // Remove the flag that this element has already been loaded.
+        ts.wrapper.classList.remove('preloaded')
+      })
+    }
   })
 })

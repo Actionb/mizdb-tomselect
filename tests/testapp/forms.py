@@ -2,7 +2,7 @@ from django import forms
 
 from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
 
-from .models import Ausgabe
+from .models import Ausgabe, Magazin
 
 kwargs = {"model": Ausgabe, "url": "ac"}
 
@@ -42,4 +42,16 @@ class AddForm(forms.Form):
 class ChangeForm(forms.Form):
     """Test form with a widget with a 'changelist' URL."""
 
-    field = forms.ModelChoiceField(Ausgabe.objects.all(), widget=MIZSelect(**kwargs, changelist_url="changelist_page"))
+    field = forms.ModelChoiceField(Ausgabe.objects.all(), widget=MIZSelect(changelist_url="changelist_page", **kwargs))
+
+
+class FilteredForm(forms.Form):
+    """
+    Test form where the results of the 'ausgabe' field are filtered by the value
+    of the 'magazin' field.
+    """
+
+    magazin = forms.ModelChoiceField(Magazin.objects.all())
+    ausgabe = forms.ModelChoiceField(
+        Ausgabe.objects.all(), widget=MIZSelect(filter_by=("magazin", "magazin_id"), **kwargs)
+    )

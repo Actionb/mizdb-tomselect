@@ -3,6 +3,7 @@ from django.apps import apps
 from django.contrib.auth import get_permission_codename
 
 SEARCH_VAR = "q"
+FILTERBY_VAR = "f"
 PAGE_VAR = "p"
 PAGE_SIZE = 20
 
@@ -19,25 +20,50 @@ class AutocompleteView(views.generic.list.BaseListView):
         self.model = apps.get_model(request_data["model"])
         self.create_field = request_data.get("create-field")
 
-    def filter_queryset(self, queryset, q):
+    def filter_queryset(self, request, queryset, q):
         """Apply search filters on the result queryset."""
-        return queryset.search(q)
+        filter_expected, filter_by = self.get_filter_by(request)
+        if filter_expected and not filter_by:
+            # A filter was set up for this autocomplete, but no filter value was
+            # provided; return an empty queryset.
+            return queryset.none()
+        return queryset.filter(**filter_by).search(q)
 
     def order_queryset(self, queryset):
         """Apply ordering to the result queryset."""
         ordering = self.model._meta.ordering or ["id"]
         return queryset.order_by(*ordering)
 
-    def get_results(self, q):
-        """Search for objects that match the search term and return the results."""
+    def get_filter_by(self, request):
+        """
+        Check whether FILTERBY_VAR is present in the request and prepare filter
+        parameters.
+
+        Returns a 2-tuple (boolean, dict). The boolean denotes whether filtering
+        is expected, and the dict contains the filter parameters.
+        """
+        if FILTERBY_VAR not in request.GET:
+            return False, {}
+        else:
+            required = True
+            lookup, value = request.GET[FILTERBY_VAR].split("=")
+            if not value:
+                return required, {}
+            return required, {lookup: value}
+
+    def get_results(self, request):
+        """
+        Search for objects that match the search parameters and return the
+        results as a values() queryset.
+        """
         queryset = self.get_queryset()
-        if q:
-            queryset = self.filter_queryset(queryset, q)
+        q = request.GET.get(SEARCH_VAR, "")
+        if q or FILTERBY_VAR in request.GET:
+            queryset = self.filter_queryset(request, queryset, q)
         return self.order_queryset(queryset.values())
 
     def get(self, request, *args, **kwargs):
-        q = request.GET.get(SEARCH_VAR, "")
-        queryset = self.get_results(q)
+        queryset = self.get_results(request)
         page_size = self.get_paginate_by(queryset)
         _, page, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
         data = {

@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import FormView
 
-from .forms import Form
+from .forms import FilteredForm, Form
 from .views import DemoAutocompleteView, add_view, changelist_view
 
 urlpatterns = [
@@ -27,4 +27,5 @@ urlpatterns = [
     path("autocomplete/", DemoAutocompleteView.as_view(), name="autocomplete"),
     path("changelist/", changelist_view, name="changelist"),
     path("add/", add_view, name="add"),
+    path("filtered/", FormView.as_view(form_class=FilteredForm, template_name="base.html"), name="filtered"),
 ]

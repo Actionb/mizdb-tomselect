@@ -5,7 +5,8 @@ from django.db import migrations
 
 def forwards_func(apps, schema_editor):
     Ausgabe = apps.get_model("app", "Ausgabe")
-    data = [{"name": f"2022-{n}", "jahr": "2022", "num": f"{n}", "lnum": f"{n+100}"} for n in range(1, 50)]
+    Magazin = apps.get_model("app", "Magazin")
+    data = [{"name": f"2022-{n}", "jahr": "2022", "num": str(n), "lnum": f"{n+100}"} for n in range(1, 50)]
     data.insert(
         10,
         {
@@ -15,13 +16,17 @@ def forwards_func(apps, schema_editor):
             "lnum": "5000000",
         },
     )
+    mag = Magazin.objects.create(name="Testmagazin")
+    _other = Magazin.objects.create(name="NoRelations")
     for d in data:
-        Ausgabe.objects.create(**d)
+        Ausgabe.objects.create(**d, magazin=mag)
 
 
 def reverse_func(apps, schema_editor):
     Ausgabe = apps.get_model("app", "Ausgabe")
+    Magazin = apps.get_model("app", "Magazin")
     Ausgabe.objects.all().delete()
+    Magazin.objects.all().delete()
 
 
 class Migration(migrations.Migration):

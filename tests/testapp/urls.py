@@ -4,7 +4,7 @@ from django.views.generic import FormView
 
 from mizdb_tomselect.views import AutocompleteView
 
-from .forms import AddForm, ChangeForm, CreateForm, MultipleForm, SimpleForm, TabularForm
+from .forms import AddForm, ChangeForm, CreateForm, FilteredForm, MultipleForm, SimpleForm, TabularForm
 
 
 def changelist_view(request):
@@ -22,6 +22,7 @@ urlpatterns = [
     path("create/", FormView.as_view(form_class=CreateForm, template_name="base.html"), name="create"),
     path("with_add/", FormView.as_view(form_class=AddForm, template_name="base.html"), name="add"),
     path("with_change/", FormView.as_view(form_class=ChangeForm, template_name="base.html"), name="changelist"),
+    path("filtered/", FormView.as_view(form_class=FilteredForm, template_name="base.html"), name="filtered"),
     path("ac/", AutocompleteView.as_view(), name="ac"),
     path("add/", add_view, name="add_page"),
     path("changelist/", changelist_view, name="changelist_page"),
