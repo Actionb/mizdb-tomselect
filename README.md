@@ -49,6 +49,7 @@ class MyForm(forms.Form):
         widget=MIZSelect(
             MyModel,
             url='my_autocomplete_view',
+            search_lookup="name__icontains",
         ),
     )
 
@@ -58,6 +59,7 @@ class MyForm(forms.Form):
         widget=MIZSelectTabular(
             MyModel,
             url='my_autocomplete_view',
+            search_lookup="name__icontains",
             # extra_columns is a mapping of model field: column header label for extra columns
             # (columns for valueField and labelField are always included)
             extra_columns={'name': 'Name', 'something_else': 'Something Else'},
@@ -89,6 +91,13 @@ Make sure to include [bootstrap](https://getbootstrap.com/docs/5.2/getting-start
 </body>
 </html>
 ```
+
+----
+### Searching
+
+The AutocompleteView filters the base queryset against the `search_lookup`
+passed to the widget. The default value for the lookup is `name__icontains`.  
+Overwrite the `AutocompleteView.search` method to modify the search process.
 
 ----
 ### Option creation

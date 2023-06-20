@@ -45,7 +45,8 @@ function getSettings (elem) {
     const params = new URLSearchParams({
       q: encodeURIComponent(query),
       p: page,
-      model: encodeURIComponent(elem.dataset.model)
+      model: encodeURIComponent(elem.dataset.model),
+      sl: encodeURIComponent(elem.dataset.searchLookup)
     })
     if (elem.filterByElem) {
       params.append('f', `${elem.filterByLookup}=${elem.filterByElem.value}`)

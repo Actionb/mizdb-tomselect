@@ -16,6 +16,7 @@ class MIZSelect(forms.Select):
         self,
         model,
         url="autocomplete",
+        search_lookup="name__icontains",
         value_field="id",
         label_field="name",
         create_field="",
@@ -32,6 +33,8 @@ class MIZSelect(forms.Select):
             model: the django model that the choices are derived from
             url: the URL pattern name of the view that serves the choices and
               handles requests from the TomSelect element
+            search_lookup: a Django field lookup to use with the given search
+              term to filter the results
             value_field: the name of the model field that corresponds to the
               choice value of an option (f.ex. 'id')
             label_field: the name of the model field that corresponds to the
@@ -49,6 +52,7 @@ class MIZSelect(forms.Select):
         """
         self.model = model
         self.url = url
+        self.search_lookup = search_lookup
         self.create_field = create_field
         self.value_field = value_field
         self.label_field = label_field
@@ -85,6 +89,7 @@ class MIZSelect(forms.Select):
                 "is-multiple": self.multiple,
                 "data-autocomplete-url": self.get_url(),
                 "data-model": f"{opts.app_label}.{opts.model_name}",
+                "data-search-lookup": self.search_lookup,
                 "data-value-field": self.value_field,
                 "data-label-field": self.label_field,
                 "data-create-field": self.create_field,

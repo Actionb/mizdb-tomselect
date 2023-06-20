@@ -3,6 +3,7 @@ from django.apps import apps
 from django.contrib.auth import get_permission_codename
 
 SEARCH_VAR = "q"
+SEARCH_LOOKUP_VAR = "sl"
 FILTERBY_VAR = "f"
 PAGE_VAR = "p"
 PAGE_SIZE = 20
@@ -19,6 +20,7 @@ class AutocompleteView(views.generic.list.BaseListView):
         request_data = getattr(request, request.method)
         self.model = apps.get_model(request_data["model"])
         self.create_field = request_data.get("create-field")
+        self.search_lookup = request.GET.get(SEARCH_LOOKUP_VAR)
 
     def apply_filter_by(self, request, queryset):
         """
@@ -42,7 +44,7 @@ class AutocompleteView(views.generic.list.BaseListView):
 
     def search(self, request, queryset, q):
         """Filter the result queryset against the search term."""
-        return queryset.search(q)
+        return queryset.filter(**{self.search_lookup: q})
 
     def order_queryset(self, queryset):
         """Order the result queryset."""

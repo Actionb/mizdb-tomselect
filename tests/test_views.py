@@ -8,7 +8,7 @@ from django.test import Client
 from django.urls import reverse
 from testapp.models import Ausgabe
 
-from mizdb_tomselect.views import FILTERBY_VAR, PAGE_SIZE, PAGE_VAR, SEARCH_VAR
+from mizdb_tomselect.views import FILTERBY_VAR, PAGE_SIZE, PAGE_VAR, SEARCH_LOOKUP_VAR, SEARCH_VAR
 
 
 @pytest.fixture
@@ -45,12 +45,7 @@ class TestAutocompleteView:
 
     def test_get_contains_result(self, admin_client, obj):
         """The response of a search query should contain the expected result."""
-        query_string = urlencode(
-            {
-                "model": self.model_label,
-                SEARCH_VAR: "test",
-            }
-        )
+        query_string = urlencode({"model": self.model_label, SEARCH_VAR: "test", SEARCH_LOOKUP_VAR: "name__icontains"})
         response = admin_client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
         assert data["results"] == list(Ausgabe.objects.filter(pk=obj.pk).values())
@@ -65,6 +60,7 @@ class TestAutocompleteView:
             "model": self.model_label,
             SEARCH_VAR: "2022",
             PAGE_VAR: str(page_number),
+            SEARCH_LOOKUP_VAR: "name__icontains",
         }
         response = admin_client.get(self.url, data=request_data)
         data = json.loads(response.content)
@@ -73,11 +69,7 @@ class TestAutocompleteView:
 
     def test_post_creates_new_object(self, admin_client):
         """A successful POST request should create a new model object."""
-        request_data = {
-            "model": self.model_label,
-            "name": "New Ausgabe",
-            "create-field": "name",
-        }
+        request_data = {"model": self.model_label, "name": "New Ausgabe", "create-field": "name"}
         response = admin_client.post(self.url, data=request_data)
         assert response.status_code == 200
         assert Ausgabe.objects.filter(name="New Ausgabe").exists()
@@ -148,7 +140,7 @@ class TestAutocompleteView:
 
     def test_get_no_search_term(self, client):
         """Assert that a GET request without a search term still returns results."""
-        query_string = urlencode({"model": self.model_label})
+        query_string = urlencode({"model": self.model_label, SEARCH_LOOKUP_VAR: "name__icontains"})
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
         assert data["results"]
@@ -158,7 +150,9 @@ class TestAutocompleteView:
         Assert that a GET request with a filterBy value returns the expected
         results.
         """
-        query_string = urlencode({"model": self.model_label, FILTERBY_VAR: "lnum=2"})
+        query_string = urlencode(
+            {"model": self.model_label, SEARCH_LOOKUP_VAR: "name__icontains", FILTERBY_VAR: "lnum=2"}
+        )
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
         assert len(data["results"]) == 1
@@ -169,7 +163,9 @@ class TestAutocompleteView:
         Assert that a GET request returns no results when a required filterBy
         has no value.
         """
-        query_string = urlencode({"model": self.model_label, FILTERBY_VAR: "lnum="})
+        query_string = urlencode(
+            {"model": self.model_label, SEARCH_LOOKUP_VAR: "name__icontains", FILTERBY_VAR: "lnum="}
+        )
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
         assert not data["results"]
