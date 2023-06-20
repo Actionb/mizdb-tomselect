@@ -42,8 +42,8 @@ class MIZSelect(forms.Select):
             create_field: the name of the model field used to create new
               model objects with
             multiple: if True, allow selecting multiple options
-            changelist_url: URL name of the changelist for this model
-            add_url: URL name for the add page of this model
+            changelist_url: URL name of the changelist view for this model
+            add_url: URL name of the add view for this model
             filter_by: a 2-tuple (form_field_name, field_lookup) to filter the
               results against the value of the form field using the given
               Django field lookup. For example:
