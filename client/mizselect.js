@@ -155,7 +155,7 @@ function getRenderTemplates (elem) {
       let columns = `<div class="col-1">${data[this.settings.valueField]}</div>
                      <div class="${this.settings.labelColClass}">${data[this.settings.labelField]}</div>`
       for (const c of this.settings.extraColumns) {
-        columns += `<div class="col">${escape(data[c]) || ''}</div>`
+        columns += `<div class="col">${escape(data[c] || '')}</div>`
       }
       return `<div class="row">${columns}</div>`
     }

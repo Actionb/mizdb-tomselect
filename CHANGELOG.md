@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 
+
+- fix handling of undefined column data
+
 ## 0.3.0 (2023-06-20)
 
 - refactor filterBy filtering in autocomplete view 
