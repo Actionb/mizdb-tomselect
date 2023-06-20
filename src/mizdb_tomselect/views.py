@@ -20,36 +20,34 @@ class AutocompleteView(views.generic.list.BaseListView):
         self.model = apps.get_model(request_data["model"])
         self.create_field = request_data.get("create-field")
 
-    def filter_queryset(self, request, queryset, q):
-        """Apply search filters on the result queryset."""
-        filter_expected, filter_by = self.get_filter_by(request)
-        if filter_expected and not filter_by:
-            # A filter was set up for this autocomplete, but no filter value was
-            # provided; return an empty queryset.
-            return queryset.none()
-        return queryset.filter(**filter_by).search(q)
-
-    def order_queryset(self, queryset):
-        """Apply ordering to the result queryset."""
-        ordering = self.model._meta.ordering or ["id"]
-        return queryset.order_by(*ordering)
-
-    def get_filter_by(self, request):
+    def apply_filter_by(self, request, queryset):
         """
-        Check whether FILTERBY_VAR is present in the request and prepare filter
-        parameters.
+        Filter the result queryset with values set by other form fields.
 
-        Returns a 2-tuple (boolean, dict). The boolean denotes whether filtering
-        is expected, and the dict contains the filter parameters.
+        If the widget was set up with a `filter_by` parameter, the request will
+        include the `FILTERBY_VAR` parameter, indicating that the results must
+        be filtered against the lookup and value provided by `FILTERBY_VAR`.
+        If `FILTERBY_VAR` is present, but no value is set, return an empty
+        queryset.
         """
         if FILTERBY_VAR not in request.GET:
-            return False, {}
+            return queryset
         else:
-            required = True
             lookup, value = request.GET[FILTERBY_VAR].split("=")
             if not value:
-                return required, {}
-            return required, {lookup: value}
+                # A filter was set up for this autocomplete, but no filter value
+                # was provided; return an empty queryset.
+                return queryset.none()
+            return queryset.filter(**{lookup: value})
+
+    def search(self, request, queryset, q):
+        """Filter the result queryset against the search term."""
+        return queryset.search(q)
+
+    def order_queryset(self, queryset):
+        """Order the result queryset."""
+        ordering = self.model._meta.ordering or ["id"]
+        return queryset.order_by(*ordering)
 
     def get_results(self, request):
         """
@@ -59,7 +57,8 @@ class AutocompleteView(views.generic.list.BaseListView):
         queryset = self.get_queryset()
         q = request.GET.get(SEARCH_VAR, "")
         if q or FILTERBY_VAR in request.GET:
-            queryset = self.filter_queryset(request, queryset, q)
+            queryset = self.apply_filter_by(request, queryset)
+            queryset = self.search(request, queryset, q)
         return self.order_queryset(queryset.values())
 
     def get(self, request, *args, **kwargs):
