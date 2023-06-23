@@ -19,6 +19,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
+[project.urls]
+Source = "https://github.com/Actionb/mizdb-tomselet"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
