@@ -1,3 +1,5 @@
+import urllib.parse
+
 from django import http, views
 from django.apps import apps
 from django.contrib.auth import get_permission_codename
@@ -57,7 +59,7 @@ class AutocompleteView(views.generic.list.BaseListView):
         results as a values() queryset.
         """
         queryset = self.get_queryset()
-        q = request.GET.get(SEARCH_VAR, "")
+        q = urllib.parse.unquote(request.GET.get(SEARCH_VAR, ""))
         if q or FILTERBY_VAR in request.GET:
             queryset = self.apply_filter_by(request, queryset)
             queryset = self.search(request, queryset, q)

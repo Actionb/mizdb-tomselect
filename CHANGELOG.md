@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.3.1 
+## [unreleased] 
+
+- unquote search var string
+
+## 0.3.1 (2023-06-20)
 
 - fix handling of undefined column data
 
