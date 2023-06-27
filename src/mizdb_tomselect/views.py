@@ -1,3 +1,4 @@
+import json
 import urllib.parse
 
 from django import http, views
@@ -7,6 +8,8 @@ from django.contrib.auth import get_permission_codename
 SEARCH_VAR = "q"
 SEARCH_LOOKUP_VAR = "sl"
 FILTERBY_VAR = "f"
+VALUES_VAR = "vs"
+
 PAGE_VAR = "p"
 PAGE_SIZE = 20
 
@@ -23,28 +26,32 @@ class AutocompleteView(views.generic.list.BaseListView):
         self.model = apps.get_model(request_data["model"])
         self.create_field = request_data.get("create-field")
         self.search_lookup = request.GET.get(SEARCH_LOOKUP_VAR)
+        self.values_select = []
+        if VALUES_VAR in request_data:
+            values = urllib.parse.unquote(request_data[VALUES_VAR])
+            self.values_select = json.loads(values)
 
-    def apply_filter_by(self, request, queryset):
+    def apply_filter_by(self, queryset):
         """
-        Filter the result queryset with values set by other form fields.
+        Filter the given queryset against values set by other form fields.
 
         If the widget was set up with a `filter_by` parameter, the request will
         include the `FILTERBY_VAR` parameter, indicating that the results must
         be filtered against the lookup and value provided by `FILTERBY_VAR`.
-        If `FILTERBY_VAR` is present, but no value is set, return an empty
+        If `FILTERBY_VAR` is present but no value is set, return an empty
         queryset.
         """
-        if FILTERBY_VAR not in request.GET:
+        if FILTERBY_VAR not in self.request.GET:
             return queryset
         else:
-            lookup, value = request.GET[FILTERBY_VAR].split("=")
+            lookup, value = self.request.GET[FILTERBY_VAR].split("=")
             if not value:
                 # A filter was set up for this autocomplete, but no filter value
                 # was provided; return an empty queryset.
                 return queryset.none()
             return queryset.filter(**{lookup: value})
 
-    def search(self, request, queryset, q):
+    def search(self, queryset, q):
         """Filter the result queryset against the search term."""
         return queryset.filter(**{self.search_lookup: q})
 
@@ -53,24 +60,29 @@ class AutocompleteView(views.generic.list.BaseListView):
         ordering = self.model._meta.ordering or ["id"]
         return queryset.order_by(*ordering)
 
-    def get_results(self, request):
-        """
-        Search for objects that match the search parameters and return the
-        results as a values() queryset.
-        """
-        queryset = self.get_queryset()
-        q = urllib.parse.unquote(request.GET.get(SEARCH_VAR, ""))
-        if q or FILTERBY_VAR in request.GET:
-            queryset = self.apply_filter_by(request, queryset)
-            queryset = self.search(request, queryset, q)
-        return self.order_queryset(queryset.values())
+    def get_queryset(self):
+        """Return a queryset of objects that match the search parameters and filters."""
+        queryset = super().get_queryset()
+        q = urllib.parse.unquote(self.request.GET.get(SEARCH_VAR, ""))
+        if q or FILTERBY_VAR in self.request.GET:
+            queryset = self.apply_filter_by(queryset)
+            queryset = self.search(queryset, q)
+        return self.order_queryset(queryset)
+
+    def get_page_results(self, page):
+        """Hook for modifying the result queryset for the given page."""
+        return page.object_list
+
+    def get_result_values(self, results):
+        """Return a list of key:value pairs for the given results."""
+        return list(results.values(*self.values_select))
 
     def get(self, request, *args, **kwargs):
-        queryset = self.get_results(request)
+        queryset = self.get_queryset()
         page_size = self.get_paginate_by(queryset)
-        _, page, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
+        paginator, page, object_list, has_other_pages = self.paginate_queryset(queryset, page_size)
         data = {
-            "results": list(page.object_list),
+            "results": self.get_result_values(self.get_page_results(page)),
             "page": page.number,
             "has_more": page.has_next(),
             "show_create_option": self.has_add_permission(request),

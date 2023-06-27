@@ -1,8 +1,11 @@
 # Changelog
 
-## [unreleased] 
+## [unreleased]
 
-- unquote search var string
+- AutocompleteView: unquote search var string
+- call values() on result queryset with fields specified on the widget only
+  - this reduces query overhead 
+  - allows including values from many-to-one relations
 
 ## 0.3.1 (2023-06-20)
 

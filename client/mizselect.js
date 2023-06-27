@@ -42,18 +42,24 @@ function getElementByPrefixedName (name, prefixes) {
 
 function getSettings (elem) {
   function buildUrl (query, page) {
+    // Get the fields to select with queryset.values()
+    let valuesSelect = [elem.dataset.valueField, elem.dataset.labelField]
+    if (elem.extraColumns) {
+      valuesSelect = valuesSelect.concat(elem.extraColumns)
+    }
     const params = new URLSearchParams({
       q: encodeURIComponent(query),
       p: page,
       model: encodeURIComponent(elem.dataset.model),
-      sl: encodeURIComponent(elem.dataset.searchLookup)
+      sl: encodeURIComponent(elem.dataset.searchLookup),
+      vs: encodeURIComponent(JSON.stringify(valuesSelect))
     })
     if (elem.filterByElem) {
       params.append('f', `${elem.filterByLookup}=${elem.filterByElem.value}`)
     }
     return `${elem.dataset.autocompleteUrl}?${params.toString()}`
   }
-  elem.extraColumns = elem.hasAttribute('is-tabular') ? JSON.parse(elem.dataset.extraColumns) : ''
+  elem.extraColumns = elem.hasAttribute('is-tabular') ? JSON.parse(elem.dataset.extraColumns) : []
   elem.labelColClass = elem.extraColumns.length > 0 && elem.extraColumns.length < 4 ? 'col-5' : 'col'
   if (elem.dataset.filterBy) {
     const filterBy = JSON.parse(elem.dataset.filterBy)
