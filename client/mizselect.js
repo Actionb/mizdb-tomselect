@@ -55,7 +55,7 @@ function getSettings (elem) {
       vs: encodeURIComponent(JSON.stringify(valuesSelect))
     })
     if (elem.filterByElem) {
-      params.append('f', `${elem.filterByLookup}=${elem.filterByElem.value}`)
+      params.append('f', encodeURIComponent(`${elem.filterByLookup}=${elem.filterByElem.value}`))
     }
     return `${elem.dataset.autocompleteUrl}?${params.toString()}`
   }
