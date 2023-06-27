@@ -21,6 +21,7 @@ class Ausgabe(models.Model):
     class Meta:
         verbose_name = "Ausgabe"
         verbose_name_plural = "Ausgaben"
+        ordering = ["magazin", "name"]
 
     def __str__(self):
         return self.name
