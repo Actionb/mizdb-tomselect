@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## 0.3.2 (2023-06-28)
 
 - AutocompleteView: unquote search var string
 - call values() on result queryset with fields specified on the widget only
