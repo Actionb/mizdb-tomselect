@@ -3,8 +3,8 @@
     "bootstrap": "^5.2.3",
     "bootswatch": "^5.2.3",
     "esbuild": "0.17.19",
-    "tom-select": "^2.2.2",
-    "standard": "^17.1.0"
+    "standard": "^17.0.0",
+    "tom-select": "^2.2.2"
   },
   "scripts": {
     "build": "esbuild client/mizselect.js --bundle --outfile=src/mizdb_tomselect/static/mizdb_tomselect/js/mizselect.js",
