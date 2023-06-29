@@ -1,8 +1,9 @@
 # Changelog
 
-## [unreleased]
+## [0.3.3] (2023-06-29)
 
-- set sensible defaults for widget attributes
+- fix dropdown footer being visible when it has no content (#2)
+- set sensible defaults for widget attributes (#3, #4)
 
 ## 0.3.2 (2023-06-28)
 

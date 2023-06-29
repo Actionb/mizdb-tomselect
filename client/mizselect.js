@@ -178,18 +178,16 @@ function attachFooter (ts, elem) {
 
     if (addURL) {
       const addBtn = document.createElement('a')
-      addBtn.classList.add('btn', 'btn-success', 'invisible', 'add-btn')
+      addBtn.classList.add('btn', 'btn-success', 'add-btn', 'd-none')
       addBtn.href = addURL
       addBtn.target = '_blank'
       addBtn.innerHTML = 'Hinzufügen'
       footer.appendChild(addBtn)
       ts.on('load', () => {
         if (ts.settings.showCreateOption) {
-          addBtn.classList.remove('invisible')
-          addBtn.classList.add('visible')
+          addBtn.classList.remove('d-none')
         } else {
-          addBtn.classList.remove('visible')
-          addBtn.classList.add('invisible')
+          addBtn.classList.add('d-none')
         }
       })
       ts.on('type', (query) => {

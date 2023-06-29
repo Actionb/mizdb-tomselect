@@ -339,7 +339,7 @@ class TestFooterAddButton:
         """
         with _page.expect_request_finished():
             search_input.fill("2022-99")
-        with _page.expect_response(live_server.url + reverse("ac"), timeout=1000) as response_info:
+        with _page.expect_response(live_server.url + reverse("ac")) as response_info:
             add_button.click()
         response = response_info.value
         data = response.json()
@@ -357,6 +357,14 @@ class TestFooterAddButton:
             add_button.click()
         expect(_page.locator(".ts-control .item")).to_have_text("2022-99")
         expect(_page.locator(".dropdown-content")).not_to_be_visible()
+
+    def test_add_button_hidden_for_unauthenticated_user(self, username, add_button):
+        """The 'add' button should be hidden if the user is not logged in."""
+        expect(add_button).to_be_hidden()
+
+    def test_footer_not_shown_when_add_btn_invisible(self, username, dropdown_footer):
+        """The footer div should not be shown when the 'add' button is invisible."""
+        expect(dropdown_footer).to_be_hidden()
 
 
 @pytest.mark.django_db
