@@ -11,13 +11,13 @@ test:
 reformat:
 	ruff check . --fix
 	black .
-	standard client/ --fix
+	npx standard client/ --fix
 
 .PHONY: lint
 lint:
 	ruff . --no-fix
 	black . --check
-	standard client/
+	npx standard client/
 
 .PHONY: build
 build:
@@ -27,6 +27,6 @@ build:
 .PHONY: init
 init:
 	pip install -e .
-	pip install -r requirements.txt
+	pip install -U -r requirements.txt
 	npm install --include=dev
 	npm run build
