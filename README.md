@@ -114,18 +114,18 @@ from the attributes in the dataset property.
 
 Base autocomplete widget. The arguments of MIZSelect are:
 
-| Argument       | Default value       | Description                                                                                    |
-|----------------|---------------------|------------------------------------------------------------------------------------------------|
-| model          | **required**        | the model class that provides the choices                                                      |
-| url            | `"autocomplete"`    | URL pattern name of the autocomplete view                                                      |
-| search_lookup  | `"name__icontains"` | the lookup to use when filtering the results                                                   |
-| value_field    | `"id"`              | model field that provides the value of an option                                               |
-| label_field    | `"name"`            | model field that provides the label of an option                                               |
-| create_field   |                     | model field to create new objects with ([see below](#ajax-request))                            |
-| multiple       | False               | if True, allow selecting multiple options                                                      |
-| changelist_url |                     | URL name of the changelist view for this model ([see below](#changelist-link))                 |
-| add_url        |                     | URL name of the add view for this model([see below](#option-creation))                         |
-| filter_by      |                     | a 2-tuple defining an additional filter ([see below](#filter-against-values-of-another-field)) |
+| Argument       | Default value                          | Description                                                                                    |
+|----------------|----------------------------------------|------------------------------------------------------------------------------------------------|
+| model          | **required**                           | the model class that provides the choices                                                      |
+| url            | `"autocomplete"`                       | URL pattern name of the autocomplete view                                                      |
+| value_field    | `f"{model._meta.pk.name}"`             | model field that provides the value of an option                                               |
+| label_field    | `getattr(model, "name_field", "name")` | model field that provides the label of an option                                               |
+| search_lookup  | `f"{label_field}__icontains"`          | the lookup to use when filtering the results                                                   |
+| create_field   |                                        | model field to create new objects with ([see below](#ajax-request))                            |
+| multiple       | False                                  | if True, allow selecting multiple options                                                      |
+| changelist_url |                                        | URL name of the changelist view for this model ([see below](#changelist-link))                 |
+| add_url        |                                        | URL name of the add view for this model([see below](#option-creation))                         |
+| filter_by      |                                        | a 2-tuple defining an additional filter ([see below](#filter-against-values-of-another-field)) |
 
 
 ### MIZSelectTabular
@@ -140,11 +140,11 @@ human-readable part of the choice).
 
 MIZSelectTabular has the following additional arguments:
 
-| Argument           | Default value | Description                         |
-|--------------------|---------------|-------------------------------------|
-| extra_columns      |               | a mapping for additional columns    |
-| value_field_label  | `"ID"`        | table header for the value column   |
-| label_field_label  | `"Object"`    | table header for the label column   |
+| Argument           | Default value                   | Description                         |
+|--------------------|---------------------------------|-------------------------------------|
+| extra_columns      |                                 | a mapping for additional columns    |
+| value_field_label  | `f"{value_field.title()}"`      | table header for the value column   |
+| label_field_label  | `f"{model._meta.verbose_name}"` | table header for the label column   |
 
 #### Adding more columns 
 

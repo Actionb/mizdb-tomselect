@@ -1,4 +1,5 @@
 import pytest
+from django.db import models
 from testapp.models import Ausgabe
 
 from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
@@ -17,6 +18,61 @@ class WidgetTestCase:
 
 class TestMIZSelect(WidgetTestCase):
     widget_class = MIZSelect
+
+    def test_init_sets_default_value_field(self):
+        """
+        Assert that init sets the default for `value_field` to the model's
+        primary key.
+        """
+
+        class CustomPrimaryKeyModel(models.Model):
+            my_primary_key = models.PositiveIntegerField(primary_key=True)
+
+            class Meta:
+                app_label = "testapp"
+
+        widget = self.widget_class(CustomPrimaryKeyModel)
+        assert widget.value_field == "my_primary_key"
+
+    def test_init_sets_default_label_field_to_name(self):
+        """
+        Assert that init sets the default for `label_field` to 'name' if the
+        model has no `name_field`.
+        """
+
+        class NoNameFieldModel(models.Model):
+            foo = models.CharField(max_length=1)
+
+            class Meta:
+                app_label = "testapp"
+
+        widget = self.widget_class(NoNameFieldModel)
+        assert widget.label_field == "name"
+
+    def test_init_sets_default_label_field_to_name_field(self):
+        """
+        Assert that init sets the default for `label_field` to the model's
+        `name_field`.
+        """
+
+        class NameFieldModel(models.Model):
+            foo = models.CharField(max_length=1)
+
+            name_field = "foo"
+
+            class Meta:
+                app_label = "testapp"
+
+        widget = self.widget_class(NameFieldModel)
+        assert widget.label_field == "foo"
+
+    def test_init_sets_default_search_lookup_from_label_field(self):
+        """
+        Assert that init sets the default for `search_lookup` to the value of
+        label_field + icontains.
+        """
+        widget = MIZSelect(Ausgabe, label_field="foo")
+        assert widget.search_lookup == "foo__icontains"
 
     def test_optgroups_no_initial_choices(self):
         """Assert that the widget is rendered without any options."""
@@ -57,6 +113,22 @@ class TestMIZSelect(WidgetTestCase):
 
 class TestTabularMIZSelect(WidgetTestCase):
     widget_class = MIZSelectTabular
+
+    def test_init_sets_label_field_label(self):
+        """
+        Assert that init sets the default for `label_field_label` to the
+        verbose_name of the model.
+        """
+        widget = self.widget_class(Ausgabe)
+        assert widget.label_field_label == "Ausgabe"
+
+    def test_init_sets_value_field_label(self):
+        """
+        Assert that init sets the default for `value_field_label` to
+        value_field.title().
+        """
+        widget = self.widget_class(Ausgabe)
+        assert widget.value_field_label == "Id"
 
     def test_build_attrs(self):
         """Assert that the required HTML attributes are added."""

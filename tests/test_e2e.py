@@ -220,7 +220,7 @@ class TestTabularSelect:
         expect(header_columns).to_have_count(5)
         id_col, label_col, jahr_col, num_col, lnum_col = header_columns.all()
         expect(id_col).to_have_class("col-1")
-        expect(id_col).to_have_text("ID")
+        expect(id_col).to_have_text("Id")
         expect(label_col).to_have_class("col-5")
         expect(label_col).to_have_text("Ausgabe")
         expect(jahr_col).to_have_class("col")

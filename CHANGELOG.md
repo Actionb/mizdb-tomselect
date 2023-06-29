@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- set sensible defaults for widget attributes
+
 ## 0.3.2 (2023-06-28)
 
 - AutocompleteView: unquote search var string
