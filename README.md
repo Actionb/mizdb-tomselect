@@ -20,11 +20,12 @@ Note that this was written specifically with the [MIZDB](https://github.com/Acti
 <!-- TOC -->
 
 ----
+
 ## Installation
 
 Install:
 ```bash
-pip install -U mizdb_tomselect
+pip install -U mizdb-tomselect
 ```
 ## Usage
 
@@ -104,6 +105,8 @@ NOTE: Make sure to include [bootstrap](https://getbootstrap.com/docs/5.2/getting
 </html>
 ```
 
+----
+
 ## Widgets
 
 The widgets pass attributes necessary to make autocomplete requests to the
@@ -161,6 +164,7 @@ The results for TomSelect are created by the view calling `values()` on the
 result queryset, so you must make sure that the attribute name is available
 on the view's root queryset as either a model field or as an annotation.
 
+----
 
 ## Function & Features
 
@@ -177,7 +181,6 @@ class MyAutocompleteView(AutocompleteView):
         return queryset.search(q)
 ```
 
-----
 ### Option creation
 
 To enable option creation in the dropdown, pass the URL pattern name of the 
@@ -215,7 +218,6 @@ class AutocompleteView:
 
 Override the view's `create_object` method to change the creation process.
 
-----
 ### Changelist link
 
 The dropdown will include a link to the changelist of the given model if you
@@ -232,7 +234,7 @@ urlpatterns = [
 # forms.py
 widget = MIZSelect(City, url='my_autocomplete_view', changelist_url='city_changelist')
 ```
-----
+
 ### Filter against values of another field
 
 Use the `filter_by` argument to restrict the available options to the value of 
@@ -263,6 +265,8 @@ This will result in the Person result queryset to be filtered against
 NOTE: When using `filter_by`, the declaring element now **requires** that the other field 
 provides a value. If the other field does not have a value, the search will not 
 return any results.
+
+----
 
 ## Development & Demo
 
