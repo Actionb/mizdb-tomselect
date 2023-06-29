@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 [project.urls]
-Source = "https://github.com/Actionb/mizdb-tomselet"
+Source = "https://github.com/Actionb/mizdb-tomselect"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
