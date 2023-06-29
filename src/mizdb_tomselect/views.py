@@ -4,6 +4,7 @@ from urllib.parse import unquote
 from django import http, views
 from django.apps import apps
 from django.contrib.auth import get_permission_codename
+from django.db import transaction
 
 SEARCH_VAR = "q"
 SEARCH_LOOKUP_VAR = "sl"
@@ -107,5 +108,6 @@ class AutocompleteView(views.generic.list.BaseListView):
             return http.HttpResponseForbidden()
         if request.POST.get(self.create_field) is None:
             return http.HttpResponseBadRequest()
-        obj = self.create_object(request.POST)
+        with transaction.atomic():
+            obj = self.create_object(request.POST)
         return http.JsonResponse({"pk": obj.pk, "text": str(obj)})

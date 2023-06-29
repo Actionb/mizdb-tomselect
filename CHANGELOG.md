@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- wrap create_object in an atomic block
+
 ## [0.3.3] (2023-06-29)
 
 - fix dropdown footer being visible when it has no content (#2)
