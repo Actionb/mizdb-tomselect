@@ -26,11 +26,12 @@ class AutocompleteView(views.generic.list.BaseListView):
         request_data = getattr(request, request.method)
         self.model = apps.get_model(request_data["model"])
         self.create_field = request_data.get("create-field")
-        self.search_lookup = request.GET.get(SEARCH_LOOKUP_VAR)
+        self.search_lookup = request_data.get(SEARCH_LOOKUP_VAR)
         self.values_select = []
         if VALUES_VAR in request_data:
             values = unquote(request_data[VALUES_VAR])
             self.values_select = json.loads(values)
+        self.q = unquote(request_data.get(SEARCH_VAR, ""))
 
     def apply_filter_by(self, queryset):
         """
@@ -64,10 +65,9 @@ class AutocompleteView(views.generic.list.BaseListView):
     def get_queryset(self):
         """Return a queryset of objects that match the search parameters and filters."""
         queryset = super().get_queryset()
-        q = unquote(self.request.GET.get(SEARCH_VAR, ""))
-        if q or FILTERBY_VAR in self.request.GET:
+        if self.q or FILTERBY_VAR in self.request.GET:
             queryset = self.apply_filter_by(queryset)
-            queryset = self.search(queryset, q)
+            queryset = self.search(queryset, self.q)
         return self.order_queryset(queryset)
 
     def get_page_results(self, page):

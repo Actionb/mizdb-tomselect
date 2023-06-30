@@ -2,6 +2,7 @@
 
 ## [unreleased]
 
+- assign search term as AutocompleteView instance variable 'q'
 - wrap create_object in an atomic block
 
 ## [0.3.3] (2023-06-29)
