@@ -75,7 +75,7 @@ class AutocompleteView(views.generic.list.BaseListView):
         return page.object_list
 
     def get_result_values(self, results):
-        """Return a list of key:value pairs for the given results."""
+        """Return a JSON-serializable list of values for the given results."""
         return list(results.values(*self.values_select))
 
     def get(self, request, *args, **kwargs):
