@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock, patch
-from urllib.parse import quote, urlencode
+from urllib.parse import urlencode
 
 import pytest
 from django.contrib.auth import get_permission_codename, get_user_model
@@ -240,12 +240,12 @@ class TestAutocompleteViewUnitTests:
         """Assert that setup() sets the `search_lookup` attribute."""
         assert view.search_lookup == "search_lookup"
 
-    @pytest.mark.parametrize("request_data", [{VALUES_VAR: quote(json.dumps(["id", "name", "jahr", "num"]))}])
+    @pytest.mark.parametrize("request_data", [{VALUES_VAR: json.dumps(["id", "name", "jahr", "num"])}])
     def test_setup_sets_values_select(self, view, setup_view, request_data):
         """Assert that setup() sets the `values_select` attribute."""
         assert view.values_select == ["id", "name", "jahr", "num"]
 
-    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: quote("magazin_id=1")}])
+    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "magazin_id=1"}])
     def test_apply_filter_by(self, view, request_data):
         """Assert that apply_filter_by applies the expected ^filter to the queryset."""
         queryset = view.apply_filter_by(self.queryset)
@@ -263,7 +263,7 @@ class TestAutocompleteViewUnitTests:
         queryset = view.apply_filter_by(self.queryset)
         assert len(queryset.query.where.children) == 0
 
-    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: quote("magazin_id=")}])
+    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "magazin_id="}])
     def test_apply_filter_by_no_filter_value(self, view, request_data):
         """
         Assert that apply_filter_by returns an empty queryset if no filter
@@ -286,7 +286,7 @@ class TestAutocompleteViewUnitTests:
         """Assert that order_queryset applies ordering to the queryset."""
         assert view.order_queryset(self.queryset).query.order_by == ("magazin", "name")
 
-    @pytest.mark.parametrize("request_data", [{SEARCH_VAR: quote("Test"), SEARCH_LOOKUP_VAR: "name__icontains"}])
+    @pytest.mark.parametrize("request_data", [{SEARCH_VAR: "Test", SEARCH_LOOKUP_VAR: "name__icontains"}])
     def test_get_queryset_calls_search(self, view, setup_view, request_data):
         """Assert that get_queryset calls search if a search term is given."""
         search_mock = Mock()
@@ -294,9 +294,7 @@ class TestAutocompleteViewUnitTests:
             view.get_queryset()
             search_mock.assert_called()
 
-    @pytest.mark.parametrize(
-        "request_data", [{FILTERBY_VAR: quote("magazin_id=1"), SEARCH_LOOKUP_VAR: "name__icontains"}]
-    )
+    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "magazin_id=1", SEARCH_LOOKUP_VAR: "name__icontains"}])
     def test_get_queryset_calls_apply_filter_by(self, view, setup_view, request_data):
         """Assert that get_queryset calls apply_filter_by if FILTERBY_VAR is given."""
         apply_filter_by_mock = Mock()
@@ -311,7 +309,7 @@ class TestAutocompleteViewUnitTests:
             view.get_queryset()
             order_queryset_mock.assert_called()
 
-    @pytest.mark.parametrize("request_data", [{VALUES_VAR: quote(json.dumps(["id", "name", "jahr", "num"]))}])
+    @pytest.mark.parametrize("request_data", [{VALUES_VAR: json.dumps(["id", "name", "jahr", "num"])}])
     def test_get_result_values(self, view, setup_view, request_data, obj):
         """Assert that get_result_values returns a list of queryset values."""
         results = view.get_result_values(self.queryset.filter(pk=obj.pk))

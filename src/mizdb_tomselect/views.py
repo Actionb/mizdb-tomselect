@@ -1,5 +1,4 @@
 import json
-from urllib.parse import unquote
 
 from django import http, views
 from django.apps import apps
@@ -29,9 +28,8 @@ class AutocompleteView(views.generic.list.BaseListView):
         self.search_lookup = request_data.get(SEARCH_LOOKUP_VAR)
         self.values_select = []
         if VALUES_VAR in request_data:
-            values = unquote(request_data[VALUES_VAR])
-            self.values_select = json.loads(values)
-        self.q = unquote(request_data.get(SEARCH_VAR, ""))
+            self.values_select = json.loads(request_data[VALUES_VAR])
+        self.q = request_data.get(SEARCH_VAR, "")
 
     def apply_filter_by(self, queryset):
         """
@@ -46,7 +44,7 @@ class AutocompleteView(views.generic.list.BaseListView):
         if FILTERBY_VAR not in self.request.GET:
             return queryset
         else:
-            lookup, value = unquote(self.request.GET[FILTERBY_VAR]).split("=")
+            lookup, value = self.request.GET[FILTERBY_VAR].split("=")
             if not value:
                 # A filter was set up for this autocomplete, but no filter value
                 # was provided; return an empty queryset.

@@ -48,14 +48,14 @@ function getSettings (elem) {
       valuesSelect = valuesSelect.concat(elem.extraColumns)
     }
     const params = new URLSearchParams({
-      q: encodeURIComponent(query),
+      q: query,
       p: page,
-      model: encodeURIComponent(elem.dataset.model),
-      sl: encodeURIComponent(elem.dataset.searchLookup),
-      vs: encodeURIComponent(JSON.stringify(valuesSelect))
+      model: elem.dataset.model,
+      sl: elem.dataset.searchLookup,
+      vs: JSON.stringify(valuesSelect)
     })
     if (elem.filterByElem) {
-      params.append('f', encodeURIComponent(`${elem.filterByLookup}=${elem.filterByElem.value}`))
+      params.append('f', `${elem.filterByLookup}=${elem.filterByElem.value}`)
     }
     return `${elem.dataset.autocompleteUrl}?${params.toString()}`
   }
@@ -248,7 +248,7 @@ function attachFooter (ts, elem) {
         // TODO: include value of filterBy in query
         if (query) {
           // Update the URL to the changelist to include the query
-          const queryString = new URLSearchParams({ q: encodeURIComponent(query) }).toString()
+          const queryString = new URLSearchParams({ q: query }).toString()
           changelistLink.href = `${changelistURL}?${queryString}`
         } else {
           changelistLink.href = changelistURL

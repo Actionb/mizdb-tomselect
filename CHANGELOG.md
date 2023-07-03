@@ -1,9 +1,10 @@
 # Changelog
 
-## [unreleased]
+## [0.3.4] (2023-07-03)
 
 - assign search term as AutocompleteView instance variable 'q'
 - wrap create_object in an atomic block
+- no longer call encodeURIComponent on values for query strings
 
 ## [0.3.3] (2023-06-29)
 
