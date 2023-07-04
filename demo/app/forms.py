@@ -8,13 +8,7 @@ from .models import Ausgabe, Magazin
 class Form(forms.Form):
     mizselect = forms.ModelChoiceField(
         Ausgabe.objects.all(),
-        widget=MIZSelect(
-            Ausgabe,
-            attrs={"class": "form-control mb-3"},
-            changelist_url="changelist",
-            add_url="add",
-            create_field="name",
-        ),
+        widget=MIZSelect(Ausgabe, changelist_url="changelist", add_url="add", create_field="name"),
         required=False,
     )
     mizselect_tabular = forms.ModelChoiceField(
@@ -23,7 +17,6 @@ class Form(forms.Form):
             Ausgabe,
             extra_columns={"jahr": "Jahr", "num": "Nummer", "lnum": "lfd.Nummer"},
             label_field_label="Ausgabe",
-            attrs={"class": "form-control mb-3"},
             changelist_url="changelist",
             add_url="add",
         ),
@@ -33,12 +26,7 @@ class Form(forms.Form):
     # Multiple selection:
     mizselect_multiple = forms.ModelChoiceField(
         Ausgabe.objects.all(),
-        widget=MIZSelect(
-            Ausgabe,
-            attrs={"class": "form-control mb-3"},
-            multiple=True,
-            changelist_url="changelist",
-        ),
+        widget=MIZSelect(Ausgabe, multiple=True, changelist_url="changelist"),
         required=False,
     )
     mizselect_tabular_multiple = forms.ModelChoiceField(
@@ -48,7 +36,6 @@ class Form(forms.Form):
             extra_columns={"jahr": "Jahr", "num": "Nummer", "lnum": "lfd.Nummer"},
             label_field_label="Ausgabe",
             multiple=True,
-            attrs={"class": "form-control mb-3"},
             add_url="add",
             create_field="name",
         ),
@@ -62,7 +49,6 @@ class FilteredForm(forms.Form):
         Ausgabe.objects.all(),
         widget=MIZSelect(
             Ausgabe,
-            attrs={"class": "form-control mb-3"},
             changelist_url="changelist",
             add_url="add",
             create_field="name",
