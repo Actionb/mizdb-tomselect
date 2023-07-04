@@ -235,6 +235,20 @@ urlpatterns = [
 widget = MIZSelect(City, url='my_autocomplete_view', changelist_url='city_changelist')
 ```
 
+### Inline edit link
+
+Provide a `edit_url` to attach a link to the edit/change page for each selected item.
+```python
+# urls.py
+urlpatterns = [
+    ...
+    path('city/edit/<path:object_id>/', CityChangeView.as_view(), name='city_change'),
+]
+
+# forms.py
+widget = MIZSelect(City, edit_url='city_change')
+```
+
 ### Filter against values of another field
 
 Use the `filter_by` argument to restrict the available options to the value of 

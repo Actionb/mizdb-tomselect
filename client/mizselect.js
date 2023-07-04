@@ -6,6 +6,7 @@ import dropdown_header from 'tom-select/src/plugins/dropdown_header/plugin'
 import dropdown_input from 'tom-select/src/plugins/dropdown_input/plugin'
 import remove_button from 'tom-select/src/plugins/remove_button/plugin'
 import virtual_scroll from 'tom-select/src/plugins/virtual_scroll/plugin'
+import edit_button from './plugins/edit_button'
 /* eslint-enable camelcase */
 
 TomSelect.define('clear_button', clear_button)
@@ -13,6 +14,7 @@ TomSelect.define('dropdown_header', dropdown_header)
 TomSelect.define('dropdown_input', dropdown_input)
 TomSelect.define('remove_button', remove_button)
 TomSelect.define('virtual_scroll', virtual_scroll)
+TomSelect.define('edit_button', edit_button)
 
 /**
  * Extract the form prefix from the name of the given element.
@@ -110,13 +112,15 @@ function getSettings (elem) {
 }
 
 function getPlugins (elem) {
+  const removeImage = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x text-danger"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
   const plugins = {
     dropdown_input: null,
-    virtual_scroll: null
+    virtual_scroll: null,
+    edit_button: { editUrl: elem.dataset.editUrl },
+    remove_button: { title: 'Entfernen', label: removeImage }
   }
 
   if (elem.hasAttribute('is-multiple')) {
-    plugins.remove_button = { title: 'Entfernen' }
     plugins.clear_button = { title: 'Auswahl aufheben' }
   }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- add edit links to selected items
+
 ## [0.3.4] (2023-07-03)
 
 - assign search term as AutocompleteView instance variable 'q'

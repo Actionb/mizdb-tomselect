@@ -16,3 +16,17 @@
     background: var(--bs-primary);
     color: #fff;
 }
+
+.edit {
+    border-left: 1px solid #dee2e6;
+    margin-left: 5px;
+    padding: 0 5px;
+}
+
+.edit:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.edit ~ .remove {
+  margin-left: 0 !important;
+}

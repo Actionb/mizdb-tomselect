@@ -19,6 +19,7 @@ class Form(forms.Form):
             label_field_label="Ausgabe",
             changelist_url="changelist",
             add_url="add",
+            edit_url="edit",
         ),
         required=False,
     )
@@ -38,6 +39,7 @@ class Form(forms.Form):
             multiple=True,
             add_url="add",
             create_field="name",
+            edit_url="edit",
         ),
         required=False,
     )

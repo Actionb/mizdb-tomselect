@@ -1,4 +1,5 @@
 import json
+from urllib.parse import unquote
 
 from django import forms
 from django.urls import reverse
@@ -23,6 +24,7 @@ class MIZSelect(forms.Select):
         multiple=False,
         changelist_url="",
         add_url="",
+        edit_url="",
         filter_by=(),
         **kwargs,
     ):
@@ -45,8 +47,9 @@ class MIZSelect(forms.Select):
             create_field: the name of the model field used to create new
               model objects with
             multiple: if True, allow selecting multiple options
-            changelist_url: URL name of the changelist view for this model
-            add_url: URL name of the add view for this model
+            changelist_url: URL name of the 'changelist' view for this model
+            add_url: URL name of the 'add' view for this model
+            edit_url: URL name of the 'change' view for this model
             filter_by: a 2-tuple (form_field_name, field_lookup) to filter the
               results against the value of the form field using the given
               Django field lookup. For example:
@@ -62,6 +65,7 @@ class MIZSelect(forms.Select):
         self.multiple = multiple
         self.changelist_url = changelist_url
         self.add_url = add_url
+        self.edit_url = edit_url
         self.filter_by = filter_by
         super().__init__(**kwargs)
 
@@ -73,12 +77,17 @@ class MIZSelect(forms.Select):
         return reverse(self.url)
 
     def get_add_url(self):
-        """Hook to specify the URL to the model's add page."""
+        """Hook to specify the URL to the model's 'add' page."""
         if self.add_url:
             return reverse(self.add_url)
 
+    def get_edit_url(self):
+        """Hook to specify the URL to the model's 'change' page."""
+        if self.edit_url:
+            return unquote(reverse(self.edit_url, args=["{pk}"]))
+
     def get_changelist_url(self):
-        """Hook to specify the URL the model's changelist."""
+        """Hook to specify the URL the model's 'changelist' page."""
         if self.changelist_url:
             return reverse(self.changelist_url)
 
@@ -98,6 +107,7 @@ class MIZSelect(forms.Select):
                 "data-create-field": self.create_field,
                 "data-changelist-url": self.get_changelist_url() or "",
                 "data-add-url": self.get_add_url() or "",
+                "data-edit-url": self.get_edit_url() or "",
                 "data-filter-by": json.dumps(list(self.filter_by)),
             }
         )

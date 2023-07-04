@@ -408,3 +408,39 @@ def test_options_filtered(_page, magazin_select, magazin, other_magazin, ts_wrap
     with _page.expect_request_finished():
         ts_wrapper.click()
     expect(get_select_options(_page)).not_to_have_count(0)
+
+
+@pytest.fixture
+def select_first(_page, search):
+    """Select the first option."""
+    options = get_select_options(_page).all()
+    options[0].click()
+
+
+@pytest.fixture
+def ts_control(_page):
+    return _page.locator(".ts-control")
+
+
+@pytest.fixture
+def first_selected(ts_control, select_first):
+    """Return the locator for the first selected option."""
+    return ts_control.locator(".item").first
+
+
+@pytest.fixture
+def first_selected_value(first_selected):
+    """Return the 'value' of the first selected item."""
+    return first_selected.get_attribute("data-value")
+
+
+@pytest.fixture
+def edit_button(first_selected):
+    """Return the edit button for the selected option."""
+    return first_selected.locator(".edit")
+
+
+@pytest.mark.parametrize("view_name", ["edit"])
+def test_adds_edit_button(_page, view_name, first_selected_value, edit_button):
+    """Assert that an edit button is added to the selected item."""
+    expect(edit_button).to_have_attribute("href", reverse("edit_page", args=[first_selected_value]))

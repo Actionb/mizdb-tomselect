@@ -55,3 +55,9 @@ class FilteredForm(forms.Form):
     ausgabe = forms.ModelChoiceField(
         Ausgabe.objects.all(), widget=MIZSelect(filter_by=("magazin", "magazin_id"), **kwargs)
     )
+
+
+class EditButtonForm(forms.Form):
+    """Test form where the selected items should have an edit button."""
+
+    field = forms.ModelChoiceField(Ausgabe.objects.all(), widget=MIZSelect(edit_url="edit_page", **kwargs))
