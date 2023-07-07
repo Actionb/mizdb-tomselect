@@ -15,10 +15,10 @@ Note that this was written specifically with the [MIZDB](https://github.com/Acti
     * [Option creation](#option-creation)
       * [AJAX request](#ajax-request)
     * [Changelist link](#changelist-link)
+    * [Inline edit link](#inline-edit-link)
     * [Filter against values of another field](#filter-against-values-of-another-field)
   * [Development & Demo](#development--demo)
 <!-- TOC -->
-
 ----
 
 ## Installation
@@ -128,6 +128,7 @@ Base autocomplete widget. The arguments of MIZSelect are:
 | multiple       | False                                  | if True, allow selecting multiple options                                                      |
 | changelist_url |                                        | URL name of the changelist view for this model ([see below](#changelist-link))                 |
 | add_url        |                                        | URL name of the add view for this model([see below](#option-creation))                         |
+| edit_url       |                                        | URL name of the edit view for this model([see below](#inline-edit-link))                       |
 | filter_by      |                                        | a 2-tuple defining an additional filter ([see below](#filter-against-values-of-another-field)) |
 
 
