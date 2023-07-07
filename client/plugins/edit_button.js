@@ -35,7 +35,7 @@ const isHtmlString = arg => {
 /**
  * Plugin: "edit_button" (Tom Select)
  *
- * Attach an 'edit' link to the selected items.
+ * Attach an 'edit' link to each selected item.
  *
  * Configuration:
  *  label: the text of the link
@@ -62,23 +62,13 @@ export default function (userOptions) {
 
   if (!options.editUrl) return
 
-  const self = this
   const html = `<a class="${options.className}" title="${options.title}" target="_blank">${options.label}</a>`
-  const editButton = getDom(html)
-  editButton.addEventListener('click', (e) => {
-    e.stopPropagation() // do not show the dropdown
-  })
-  self.on('item_add', (value, item) => {
+  this.on('item_add', (value, item) => {
+    const editButton = getDom(html)
+    editButton.addEventListener('click', (e) => {
+      e.stopPropagation() // do not show the dropdown
+    })
     editButton.href = options.getEditUrl(options, item, value)
-  })
-
-  self.hook('after', 'setupTemplates', () => {
-    const orig = self.settings.render.item
-
-    self.settings.render.item = (data, escape) => {
-      const item = getDom(orig.call(self, data, escape))
-      item.appendChild(editButton)
-      return item
-    }
+    getDom(item).appendChild(editButton)
   })
 }
