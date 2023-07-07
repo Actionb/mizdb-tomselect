@@ -1,11 +1,13 @@
 .PHONY: tox
 tox:
+	npm run build
 	rm -rf .tox
 	tox -p auto
 
 .PHONY: test
 test:
-	pytest --cov --cov-config=./tests/.coveragerc --cov-report=term-missing -n auto --e2e tests
+	npm run build
+	pytest --cov --cov-config=./tests/.coveragerc --cov-report=term-missing -n auto tests
 
 .PHONY: reformat
 reformat:

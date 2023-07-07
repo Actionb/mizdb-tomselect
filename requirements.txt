@@ -11,3 +11,4 @@ black==23.3.0
 ruff==0.0.270
 build==0.10.0
 twine==4.0.2
+factory_boy==3.2.1

@@ -3,83 +3,99 @@ from unittest.mock import Mock, patch
 from urllib.parse import urlencode
 
 import pytest
-from django.contrib.auth import get_permission_codename, get_user_model
-from django.contrib.auth.models import Permission
 from django.db.models.sql.where import NothingNode
-from django.http import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.test import Client
-from django.urls import reverse
-from testapp.models import Ausgabe
+from django.urls import path, reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from mizdb_tomselect.views import (
     FILTERBY_VAR,
-    PAGE_SIZE,
     PAGE_VAR,
     SEARCH_LOOKUP_VAR,
     SEARCH_VAR,
     VALUES_VAR,
     AutocompleteView,
 )
+from tests.testapp.models import Person
+
+
+@ensure_csrf_cookie
+def csrf_cookie_view(request):
+    # A dummy view to make the CSRF middleware set the CSRF cookie.
+    return HttpResponse()
+
+
+urlpatterns = [
+    path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
+    path("csrf/", csrf_cookie_view, name="csrf"),
+]
 
 
 @pytest.fixture
-def obj():
-    return Ausgabe.objects.create(name="Test", num="1", lnum="2", jahr="3")
+def request_data():
+    """Return additional request data as set by test parametrization."""
+    return {}
 
 
-@pytest.fixture(autouse=True)
-def not_found():
-    # Add a 'control' object that should never be included in the search results.
-    return Ausgabe.objects.create(name="Not Found")
+def _make_request(rf_func, request_data):
+    """Call the request factory function `rf_func` to create a request."""
 
+    def inner(data=None, user=None, **extra):
+        # Let data override the parametrized request data:
+        request = rf_func("/", data={**request_data, **(data or {})}, **extra)
+        if user:
+            request.user = user
+        return request
 
-@pytest.fixture
-def pages():
-    # Create enough data for multiple pages.
-    return [
-        Ausgabe.objects.create(name=f"2022-{i + 1:02}", num=i + 1, lnum=100 + i, jahr="2022")
-        for i in range(PAGE_SIZE * 2)
-    ]
-
-
-@pytest.fixture
-def perms_user():
-    # Create a user that has 'add' permission for model Ausgabe
-    user = get_user_model().objects.create_user(username="perms", password="foo")
-    user.user_permissions.add(Permission.objects.get(codename=get_permission_codename("add", Ausgabe._meta)))
-    return user
+    return inner
 
 
 @pytest.fixture
-def noperms_user():
-    return get_user_model().objects.create_user(username="noperms", password="bar")
+def get_request(rf, request_data):
+    """Return a GET request."""
+    return _make_request(rf.get, request_data)
+
+
+@pytest.fixture
+def post_request(rf, request_data):
+    """Return a POST request."""
+    return _make_request(rf.post, request_data)
 
 
 @pytest.mark.django_db
+@pytest.mark.urls(__name__)
 class TestAutocompleteView:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.url = reverse("autocomplete")
-        self.model_label = f"{Ausgabe._meta.app_label}.{Ausgabe._meta.model_name}"
+        self.model_label = f"{Person._meta.app_label}.{Person._meta.model_name}"
 
-    def test_get_contains_result(self, admin_client, obj):
+    def test_get_contains_result(self, admin_client, random_person):
         """The response of a search query should contain the expected result."""
-        query_string = urlencode({"model": self.model_label, SEARCH_VAR: "test", SEARCH_LOOKUP_VAR: "name__icontains"})
+        query_string = urlencode(
+            {
+                "model": self.model_label,
+                SEARCH_VAR: random_person.full_name,
+                SEARCH_LOOKUP_VAR: "full_name__icontains",
+                VALUES_VAR: json.dumps(["id", "full_name"]),
+            }
+        )
         response = admin_client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
-        assert data["results"] == list(Ausgabe.objects.filter(pk=obj.pk).values())
+        assert data["results"] == list(Person.objects.filter(pk=random_person.pk).values("id", "full_name"))
 
-    @pytest.mark.parametrize("page_number,has_more", [(1, True), (2, False)])
-    def test_context_pagination(self, admin_client, pages, page_number, has_more):
+    @pytest.mark.parametrize("page_number,has_more", [(1, True), (2, True), (3, False)])
+    def test_context_pagination(self, admin_client, test_data, page_number, has_more):
         """
         The response of a search query should contain context items for
         pagination.
         """
         request_data = {
             "model": self.model_label,
-            SEARCH_VAR: "2022",
+            SEARCH_VAR: "Alice",
             PAGE_VAR: str(page_number),
-            SEARCH_LOOKUP_VAR: "name__icontains",
+            SEARCH_LOOKUP_VAR: "full_name__icontains",
         }
         response = admin_client.get(self.url, data=request_data)
         data = json.loads(response.content)
@@ -88,10 +104,10 @@ class TestAutocompleteView:
 
     def test_post_creates_new_object(self, admin_client):
         """A successful POST request should create a new model object."""
-        request_data = {"model": self.model_label, "name": "New Ausgabe", "create-field": "name"}
+        request_data = {"model": self.model_label, "full_name": "Bob Testman", "create-field": "full_name"}
         response = admin_client.post(self.url, data=request_data)
         assert response.status_code == 200
-        assert Ausgabe.objects.filter(name="New Ausgabe").exists()
+        assert Person.objects.filter(full_name="Bob Testman").exists()
 
     def test_post_context_contains_object_data(self, admin_client):
         """
@@ -100,11 +116,11 @@ class TestAutocompleteView:
         """
         request_data = {
             "model": self.model_label,
-            "name": "New Ausgabe",
-            "create-field": "name",
+            "full_name": "Bob Testman",
+            "create-field": "full_name",
         }
         response = admin_client.post(self.url, data=request_data)
-        new = Ausgabe.objects.get(name="New Ausgabe")
+        new = Person.objects.get(full_name="Bob Testman")
         data = json.loads(response.content)
         assert data["pk"] == new.pk
         assert data["text"] == str(new)
@@ -147,8 +163,8 @@ class TestAutocompleteView:
 
         request_data = {
             "model": self.model_label,
-            "name": "New Ausgabe",
-            "create-field": "name",
+            "full_name": "Bob Testman",
+            "create-field": "full_name",
             "csrfmiddlewaretoken": token.coded_value if has_csrf_token else "",
         }
         response = client.post(self.url, data=request_data)
@@ -157,33 +173,37 @@ class TestAutocompleteView:
         else:
             assert response.status_code == 200
 
-    def test_get_no_search_term(self, client):
+    def test_get_no_search_term(self, client, random_person):
         """Assert that a GET request without a search term still returns results."""
-        query_string = urlencode({"model": self.model_label, SEARCH_LOOKUP_VAR: "name__icontains"})
+        query_string = urlencode({"model": self.model_label, SEARCH_LOOKUP_VAR: "full_name__icontains"})
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
         assert data["results"]
 
-    def test_get_with_filter_by(self, client, obj):
+    def test_get_with_filter_by(self, client, random_person):
         """
         Assert that a GET request with a filterBy value returns the expected
         results.
         """
         query_string = urlencode(
-            {"model": self.model_label, SEARCH_LOOKUP_VAR: "name__icontains", FILTERBY_VAR: "lnum=2"}
+            {
+                "model": self.model_label,
+                SEARCH_LOOKUP_VAR: "full_name__icontains",
+                FILTERBY_VAR: f"city={random_person.city.pk}",
+            }
         )
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
-        assert len(data["results"]) == 1
-        assert data["results"][0]["id"] == obj.pk
+        assert len(data["results"])
+        assert random_person.pk in [r["id"] for r in data["results"]]
 
-    def test_get_no_filter_by(self, client):
+    def test_get_no_filter_by(self, test_data, client):
         """
         Assert that a GET request returns no results when a required filterBy
         has no value.
         """
         query_string = urlencode(
-            {"model": self.model_label, SEARCH_LOOKUP_VAR: "name__icontains", FILTERBY_VAR: "lnum="}
+            {"model": self.model_label, SEARCH_LOOKUP_VAR: "full_name__icontains", FILTERBY_VAR: "city="}
         )
         response = client.get(f"{self.url}?{query_string}")
         data = json.loads(response.content)
@@ -194,39 +214,25 @@ class TestAutocompleteView:
 class TestAutocompleteViewUnitTests:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.model = Ausgabe
+        self.model = Person
         self.queryset = self.model.objects.all()
         self.model_label = f"{self.model._meta.app_label}.{self.model._meta.model_name}"
 
     @pytest.fixture
-    def minimal_request_data(self):
-        # Minimal request data required for setting up the view.
-        return {"model": self.model_label}
-
-    @pytest.fixture
-    def request_data(self):
-        return {}
-
-    @pytest.fixture
-    def get_request(self, rf, minimal_request_data, request_data):
-        return rf.get("/", data={**minimal_request_data, **request_data})
-
-    @pytest.fixture
-    def post_request(self, rf, minimal_request_data, request_data):
-        print(f"{request_data=}")
-        return rf.post("/", data={**minimal_request_data, **request_data})
-
-    @pytest.fixture
     def view(self, get_request):
+        """Create an instance of AutocompleteView and assign the given request to it."""
         view = AutocompleteView()
-        view.request = get_request
+        view.request = get_request()
         return view
 
     @pytest.fixture
     def setup_view(self, view, get_request):
-        view.setup(request=get_request)
+        """Call the view's setup method with the given request."""
+        # 'model' is required by setup()
+        view.setup(request=get_request(data={"model": self.model_label}))
 
-    def test_setup_sets_model(self, view, setup_view):
+    @pytest.mark.parametrize("request_data", [{"model": f"{Person._meta.app_label}.{Person._meta.model_name}"}])
+    def test_setup_sets_model(self, view, setup_view, request_data):
         """Assert that setup() sets the `model` attribute."""
         assert view.model == self.model
 
@@ -240,18 +246,18 @@ class TestAutocompleteViewUnitTests:
         """Assert that setup() sets the `search_lookup` attribute."""
         assert view.search_lookup == "search_lookup"
 
-    @pytest.mark.parametrize("request_data", [{VALUES_VAR: json.dumps(["id", "name", "jahr", "num"])}])
+    @pytest.mark.parametrize("request_data", [{VALUES_VAR: json.dumps(["id", "full_name", "dob", "city"])}])
     def test_setup_sets_values_select(self, view, setup_view, request_data):
         """Assert that setup() sets the `values_select` attribute."""
-        assert view.values_select == ["id", "name", "jahr", "num"]
+        assert view.values_select == ["id", "full_name", "dob", "city"]
 
-    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "magazin_id=1"}])
+    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "city_id=1"}])
     def test_apply_filter_by(self, view, request_data):
         """Assert that apply_filter_by applies the expected ^filter to the queryset."""
         queryset = view.apply_filter_by(self.queryset)
         assert len(queryset.query.where.children) == 1
         lookup = queryset.query.where.children[0]
-        assert lookup.lhs.target == self.model._meta.get_field("magazin")
+        assert lookup.lhs.target == self.model._meta.get_field("city")
         assert lookup.rhs == 1
 
     @pytest.mark.parametrize("request_data", [{}])
@@ -263,7 +269,7 @@ class TestAutocompleteViewUnitTests:
         queryset = view.apply_filter_by(self.queryset)
         assert len(queryset.query.where.children) == 0
 
-    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "magazin_id="}])
+    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "city_id="}])
     def test_apply_filter_by_no_filter_value(self, view, request_data):
         """
         Assert that apply_filter_by returns an empty queryset if no filter
@@ -275,18 +281,18 @@ class TestAutocompleteViewUnitTests:
 
     def test_search(self, view):
         """Assert that search filters the queryset against the given search term."""
-        view.search_lookup = "name__icontains"
+        view.search_lookup = "full_name__icontains"
         queryset = view.search(self.queryset, "Test")
         assert len(queryset.query.where.children) == 1
         lookup = queryset.query.where.children[0]
-        assert lookup.lhs.target == self.model._meta.get_field("name")
+        assert lookup.lhs.target == self.model._meta.get_field("full_name")
         assert lookup.rhs == "Test"
 
     def test_order_queryset(self, view, setup_view):
         """Assert that order_queryset applies ordering to the queryset."""
-        assert view.order_queryset(self.queryset).query.order_by == ("magazin", "name")
+        assert view.order_queryset(self.queryset).query.order_by == ("last_name", "first_name")
 
-    @pytest.mark.parametrize("request_data", [{SEARCH_VAR: "Test", SEARCH_LOOKUP_VAR: "name__icontains"}])
+    @pytest.mark.parametrize("request_data", [{SEARCH_VAR: "Test", SEARCH_LOOKUP_VAR: "full_name__icontains"}])
     def test_get_queryset_calls_search(self, view, setup_view, request_data):
         """Assert that get_queryset calls search if a search term is given."""
         search_mock = Mock()
@@ -294,7 +300,7 @@ class TestAutocompleteViewUnitTests:
             view.get_queryset()
             search_mock.assert_called()
 
-    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "magazin_id=1", SEARCH_LOOKUP_VAR: "name__icontains"}])
+    @pytest.mark.parametrize("request_data", [{FILTERBY_VAR: "city_id=1", SEARCH_LOOKUP_VAR: "full_name__icontains"}])
     def test_get_queryset_calls_apply_filter_by(self, view, setup_view, request_data):
         """Assert that get_queryset calls apply_filter_by if FILTERBY_VAR is given."""
         apply_filter_by_mock = Mock()
@@ -309,13 +315,20 @@ class TestAutocompleteViewUnitTests:
             view.get_queryset()
             order_queryset_mock.assert_called()
 
-    @pytest.mark.parametrize("request_data", [{VALUES_VAR: json.dumps(["id", "name", "jahr", "num"])}])
-    def test_get_result_values(self, view, setup_view, request_data, obj):
+    @pytest.mark.parametrize("request_data", [{VALUES_VAR: json.dumps(["id", "full_name", "dob", "city__name"])}])
+    def test_get_result_values(self, view, setup_view, request_data, random_person):
         """Assert that get_result_values returns a list of queryset values."""
-        results = view.get_result_values(self.queryset.filter(pk=obj.pk))
-        assert results == [{"id": obj.pk, "name": "Test", "jahr": "3", "num": "1"}]
+        results = view.get_result_values(self.queryset.filter(pk=random_person.pk))
+        assert results == [
+            {
+                "id": random_person.pk,
+                "full_name": random_person.full_name,
+                "dob": random_person.dob,
+                "city__name": random_person.city.name,
+            }
+        ]
 
-    def test_get(self, view, setup_view, admin_user, obj):
+    def test_get(self, view, setup_view, admin_user):
         """Assert that get returns the expected response."""
         view.request.user = admin_user
         response = view.get(view.request)
@@ -336,15 +349,15 @@ class TestAutocompleteViewUnitTests:
         _request.user = request.getfixturevalue(user_name)
         assert view.has_add_permission(_request) == has_perm
 
-    @pytest.mark.parametrize("request_data", [{"create-field": "name"}])
+    @pytest.mark.parametrize("request_data", [{"create-field": "full_name"}])
     def test_create_object(self, view, setup_view, request_data):
         """Assert that create_object creates an object."""
-        obj = view.create_object({"name": "Test"})
+        obj = view.create_object({"full_name": "Bob Testman"})
         assert isinstance(obj, self.model)
-        assert obj.name == "Test"
+        assert obj.full_name == "Bob Testman"
 
     @pytest.mark.parametrize("request_data", [{"create-field": "name", "name": "__anything__"}])
-    def test_post(self, view, setup_view, post_request, request_data, obj):
+    def test_post(self, view, setup_view, post_request, request_data):
         """Assert that post returns the expected response."""
 
         class DummyObject:
@@ -358,7 +371,7 @@ class TestAutocompleteViewUnitTests:
 
         with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
             with patch.object(view, "create_object", new=create_object_mock):
-                response = view.post(post_request)
+                response = view.post(post_request())
                 assert isinstance(response, JsonResponse)
                 create_object_mock.assert_called()
                 data = json.loads(response.content)
@@ -370,15 +383,14 @@ class TestAutocompleteViewUnitTests:
         Assert that post returns a HttpResponseForbidden response when the user
         does not have permission to add objects.
         """
-        request = post_request
-        request.user = noperms_user
-        assert isinstance(view.post(post_request), HttpResponseForbidden)
+        # request = post_request
+        # request.user = noperms_user
+        assert isinstance(view.post(post_request(user=noperms_user)), HttpResponseForbidden)
 
-    @pytest.mark.parametrize("request_data", [{"create-field": "name"}])
-    def test_post_no_create_field_data(self, view, setup_view, post_request, request_data):
+    def test_post_no_create_field_data(self, view, setup_view, post_request):
         """
         Assert that post returns a HttpResponseBadRequest response when the
         request did not contain data for the create_field.
         """
         with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
-            assert isinstance(view.post(post_request), HttpResponseBadRequest)
+            assert isinstance(view.post(post_request(data={"create-field": "name"})), HttpResponseBadRequest)

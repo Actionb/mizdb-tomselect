@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "mizdb_tomselect",
-    "testapp",
+    "tests.testapp",
 ]
 
 MIDDLEWARE = [
@@ -64,7 +64,7 @@ TEMPLATES = [
     },
 ]
 
-ROOT_URLCONF = "urls"
+ROOT_URLCONF = None
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

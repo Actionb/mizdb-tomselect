@@ -1,34 +1,42 @@
 from django.db import models
 
 
-class SearchQueryset(models.QuerySet):
-    """A queryset providing a search method."""
-
-    def search(self, q):
-        return self.filter(name__icontains=q)
-
-
-class Ausgabe(models.Model):
-    name = models.CharField("Ausgabe", max_length=50)
-    jahr = models.CharField("Jahre", max_length=50)
-    num = models.CharField("Nummer", max_length=50)
-    lnum = models.CharField("lfd.Nummer", max_length=50)
-
-    magazin = models.ForeignKey("Magazin", on_delete=models.SET_NULL, blank=True, null=True)
-
-    objects = SearchQueryset.as_manager()
-
-    class Meta:
-        verbose_name = "Ausgabe"
-        verbose_name_plural = "Ausgaben"
-        ordering = ["magazin", "name"]
+class Person(models.Model):
+    full_name = models.CharField(max_length=100, blank=True)
+    first_name = models.CharField(max_length=50, blank=True)
+    last_name = models.CharField(max_length=50, blank=True)
+    dob = models.DateField(blank=True, null=True)
+    city = models.ForeignKey("City", on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.first_name} {self.last_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.full_name:
+            self.full_name = f"{self.first_name} {self.last_name}"
+        elif " " in self.full_name:
+            self.first_name, self.last_name = self.full_name.rsplit(" ", 1)
+        super().save(*args, **kwargs)
+
+    name_field = "full_name"
+    create_field = "full_name"
+
+    class Meta:
+        verbose_name = "Person"
+        verbose_name_plural = "Persons"
+        ordering = ["last_name", "first_name"]
 
 
-class Magazin(models.Model):
-    name = models.CharField("Magazin Name", max_length=50)
+class City(models.Model):
+    name = models.CharField(max_length=50)
+
+    name_field = "name"
+    create_field = "name"
+
+    class Meta:
+        verbose_name = "City"
+        verbose_name_plural = "Cities"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
