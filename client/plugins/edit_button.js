@@ -63,12 +63,23 @@ export default function (userOptions) {
   if (!options.editUrl) return
 
   const html = `<a class="${options.className}" title="${options.title}" target="_blank">${options.label}</a>`
-  this.on('item_add', (value, item) => {
-    const editButton = getDom(html)
-    editButton.addEventListener('click', (e) => {
-      e.stopPropagation() // do not show the dropdown
-    })
-    editButton.href = options.getEditUrl(options, item, value)
-    getDom(item).appendChild(editButton)
+
+  this.hook('after', 'setupTemplates', () => {
+    const orig = this.settings.render.item
+
+    this.settings.render.item = (data, escape) => {
+      const item = getDom(orig.call(this, data, escape))
+      const editButton = getDom(html)
+      editButton.addEventListener('click', (e) => {
+        e.stopPropagation() // do not show the dropdown
+      })
+      this.on('item_add', (value, _item) => {
+        if (item === _item) {
+          editButton.href = options.getEditUrl(options, item, value)
+        }
+      })
+      item.appendChild(editButton)
+      return item
+    }
   })
 }

@@ -60,6 +60,18 @@ class TestEditButton:
         for btn in edit_buttons.all():
             expect(btn).to_be_visible()
 
+    def test_edit_button_before_remove_button(self, selected, _page):
+        """Assert that the edit button is positioned before the remove button."""
+        for item in selected.all():
+            assert item.evaluate(
+                """div => {
+                edit = div.querySelector(".edit")
+                remove = div.querySelector(".remove")
+                return edit.compareDocumentPosition(remove) == Node.DOCUMENT_POSITION_FOLLOWING
+                }
+                """
+            )
+
     def test_edit_button_links_to_edit_page(self, edit_buttons, selected_values):
         """Assert that the edit button links to the edit page of the item."""
         for item, value in selected_values:
