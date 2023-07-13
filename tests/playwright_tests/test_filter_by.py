@@ -11,8 +11,8 @@ from tests.testapp.models import City, Person
 
 class FilteredForm(forms.Form):
     """
-    Test form where the results of the 'ausgabe' field are filtered by the value
-    of the 'magazin' field.
+    Test form where the results of the 'person' field are filtered by the value
+    of the 'city' field.
     """
 
     city = forms.ModelChoiceField(City.objects.all())
