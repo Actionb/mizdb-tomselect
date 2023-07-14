@@ -1,3 +1,4 @@
+import copy
 import json
 from urllib.parse import unquote
 
@@ -70,7 +71,15 @@ class MIZSelect(forms.Select):
         super().__init__(**kwargs)
 
     def optgroups(self, name, value, attrs=None):
-        return []  # Never provide any options; let the view serve the options.
+        """Only query for selected model objects."""
+        # inspired by dal.widgets.WidgetMixin from django-autocomplete-light
+        selected_choices = [str(c) for c in value if c]
+        all_choices = copy.copy(self.choices)
+        # TODO: empty values in selected_choices will be filtered out twice
+        self.choices.queryset = self.choices.queryset.filter(pk__in=[c for c in selected_choices if c])
+        results = super().optgroups(name, value, attrs)
+        self.choices = all_choices
+        return results
 
     def get_url(self):
         """Hook to specify the autocomplete URL."""

@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- fix widget not rendering initially selected choices
+
 ## 0.4.0 (2023-07-10)
 
 - add edit links to selected items

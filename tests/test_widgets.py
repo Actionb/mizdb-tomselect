@@ -1,4 +1,7 @@
+from unittest.mock import Mock, patch
+
 import pytest
+from django import forms
 from django.db import models
 from django.urls import path
 
@@ -90,10 +93,18 @@ class TestMIZSelect:
         widget = make_widget(model=Person, label_field="foo")
         assert widget.search_lookup == "foo__icontains"
 
-    def test_optgroups_no_initial_choices(self, widget):
-        """Assert that the widget is rendered without any options."""
-        context = widget.get_context("ausgabe", None, {})
-        assert not context["widget"]["optgroups"]
+    @pytest.mark.parametrize("selected", [[], [1], [42, 69]])
+    def test_optgroups_filters_to_selected_options(self, widget, selected):
+        """
+        Assert that the choices queryset is filtered to only include the
+        selected options.
+        """
+        mock_filter = Mock()
+        mock_queryset = Mock(filter=mock_filter)
+        with patch("mizdb_tomselect.widgets.super"):
+            with patch.object(widget, "choices", new=Mock(queryset=mock_queryset)):
+                widget.optgroups("name", selected)
+                mock_filter.assert_called_with(pk__in=[str(c) for c in selected])
 
     def test_build_attrs(self, make_widget):
         """Assert that the required HTML attributes are added."""
@@ -159,3 +170,80 @@ class TestTabularMIZSelect:
         assert attrs["data-label-field-label"] == "Person"
         assert attrs["data-extra-headers"] == '["Date of Birth", "City"]'
         assert attrs["data-extra-columns"] == '["dob", "city"]'
+
+
+class SingleForm(forms.Form):
+    field = forms.ModelChoiceField(Person.objects.all(), widget=MIZSelect(Person), required=False)
+
+
+class MultipleForm(forms.Form):
+    field = forms.ModelMultipleChoiceField(
+        Person.objects.all(), widget=MIZSelect(Person, multiple=True), required=False
+    )
+
+
+@pytest.fixture
+def bound_form(selected, select_mode):
+    if select_mode == "single":
+        return SingleForm(data={"field": selected[-1] if selected else None})
+    else:
+        return MultipleForm(data={"field": selected})
+
+
+@pytest.fixture
+def bound_widget(bound_form):
+    """Return the widget of the form's bound field."""
+    return bound_form["field"].field.widget
+
+
+@pytest.fixture
+def optgroups(selected, bound_widget):
+    """Return the optgroups of the bound widget."""
+    return bound_widget.optgroups("person", [str(pk) for pk in selected])
+
+
+@pytest.fixture
+def options(optgroups):
+    """
+    Return the list of options from the optgroups.
+
+    The options are dictionaries as created by ChoiceWidget.create_option().
+    """
+    options = []
+    for group in optgroups:
+        name, subgroup, index = group
+        for option in subgroup:
+            options.append(option)
+    return options
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("test_data")
+class TestBoundForm:
+    """Test MIZSelect widgets when used with a bound form."""
+
+    @pytest.mark.parametrize("selected", [[], [1], [1, 5]])
+    @pytest.mark.parametrize("select_mode", ["single", "multiple"])
+    def test_is_valid(self, bound_form, selected, select_mode):
+        """Assert that the form is valid for the given selected options."""
+        assert bound_form.is_valid(), f"Form invalid. Errors: {bound_form.errors}"
+
+    @pytest.mark.parametrize("selected", [[-1], [0], [1000]])
+    @pytest.mark.parametrize("select_mode", ["single", "multiple"])
+    def test_is_invalid(self, bound_form, selected, select_mode):
+        """Assert that the form is invalid for the given selected options."""
+        assert not bound_form.is_valid(), "Form unexpectedly valid."
+
+    @pytest.mark.parametrize("selected", [[], [1], [1, 5]])
+    @pytest.mark.parametrize("select_mode", ["single", "multiple"])
+    def test_initial_options(self, test_data, options, selected, select_mode):
+        """
+        Assert that only the selected options are included in the widget's
+        initial options.
+        """
+        option_values = sorted(str(o["value"]) for o in options)
+        if select_mode == "single":
+            # For single selects that aren't required the options will include
+            # an 'empty option' with an empty string as value.
+            option_values.pop(0)
+        assert option_values == [str(pk) for pk in selected]
