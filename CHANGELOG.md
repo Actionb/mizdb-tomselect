@@ -2,6 +2,7 @@
 
 ## [unreleased]
 
+- add multiple selection variants of the widgets
 - fix widget not rendering initially selected choices
 
 ## 0.4.0 (2023-07-10)

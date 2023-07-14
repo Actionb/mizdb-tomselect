@@ -5,7 +5,7 @@ from django import forms
 from django.db import models
 from django.urls import path
 
-from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
+from mizdb_tomselect.widgets import MIZSelect, MIZSelectMultiple, MIZSelectTabular, MIZSelectTabularMultiple
 from tests.testapp.models import Person
 
 urlpatterns = [
@@ -114,14 +114,12 @@ class TestMIZSelect:
             value_field="pk",
             label_field="name",
             create_field="the_create_field",
-            multiple=True,
             changelist_url="changelist_page",
             add_url="add_page",
             edit_url="edit_page",
         )
         attrs = widget.build_attrs({})
         assert attrs["is-tomselect"]
-        assert attrs["is-multiple"]
         assert attrs["data-autocomplete-url"] == "/test/autocomplete/"
         assert attrs["data-model"] == f"{Person._meta.app_label}.{Person._meta.model_name}"
         assert attrs["data-value-field"] == "pk"
@@ -172,14 +170,30 @@ class TestTabularMIZSelect:
         assert attrs["data-extra-columns"] == '["dob", "city"]'
 
 
+@pytest.mark.parametrize("widget_class", [MIZSelectMultiple])
+class TestMIZSelectMultiple:
+    def test_build_attrs(self, make_widget):
+        """Assert that the required HTML attributes are added."""
+        widget = make_widget(model=Person)
+        attrs = widget.build_attrs({})
+        assert attrs["is-multiple"]
+
+
+@pytest.mark.parametrize("widget_class", [MIZSelectTabularMultiple])
+class TestMIZSelectTabularMultiple:
+    def test_build_attrs(self, make_widget):
+        """Assert that the required HTML attributes are added."""
+        widget = make_widget(model=Person)
+        attrs = widget.build_attrs({})
+        assert attrs["is-multiple"]
+
+
 class SingleForm(forms.Form):
     field = forms.ModelChoiceField(Person.objects.all(), widget=MIZSelect(Person), required=False)
 
 
 class MultipleForm(forms.Form):
-    field = forms.ModelMultipleChoiceField(
-        Person.objects.all(), widget=MIZSelect(Person, multiple=True), required=False
-    )
+    field = forms.ModelMultipleChoiceField(Person.objects.all(), widget=MIZSelectMultiple(Person), required=False)
 
 
 @pytest.fixture

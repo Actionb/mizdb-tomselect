@@ -125,7 +125,6 @@ Base autocomplete widget. The arguments of MIZSelect are:
 | label_field    | `getattr(model, "name_field", "name")` | model field that provides the label of an option                                               |
 | search_lookup  | `f"{label_field}__icontains"`          | the lookup to use when filtering the results                                                   |
 | create_field   |                                        | model field to create new objects with ([see below](#ajax-request))                            |
-| multiple       | False                                  | if True, allow selecting multiple options                                                      |
 | changelist_url |                                        | URL name of the changelist view for this model ([see below](#changelist-link))                 |
 | add_url        |                                        | URL name of the add view for this model([see below](#option-creation))                         |
 | edit_url       |                                        | URL name of the edit view for this model([see below](#inline-edit-link))                       |
@@ -164,6 +163,10 @@ or property with that name or the column will remain empty.
 The results for TomSelect are created by the view calling `values()` on the 
 result queryset, so you must make sure that the attribute name is available
 on the view's root queryset as either a model field or as an annotation.
+
+### MIZSelectMultiple & MIZSelectTabularMultiple
+
+Variants of the above widgets that allow selecting multiple options.
 
 ----
 

@@ -6,7 +6,7 @@ from django.views.generic import FormView
 from playwright.sync_api import expect
 
 from mizdb_tomselect.views import AutocompleteView
-from mizdb_tomselect.widgets import MIZSelect
+from mizdb_tomselect.widgets import MIZSelectMultiple
 from tests.testapp.models import Person
 
 
@@ -15,13 +15,12 @@ class EditButtonForm(forms.Form):
 
     field = forms.ModelChoiceField(
         Person.objects.all(),
-        widget=MIZSelect(
+        widget=MIZSelectMultiple(
             model=Person,
             url="autocomplete",
             edit_url="edit_page",
             search_lookup="full_name__icontains",
             label_field="full_name",
-            multiple=True,
         ),
     )
 

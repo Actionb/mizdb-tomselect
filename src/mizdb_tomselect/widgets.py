@@ -22,7 +22,6 @@ class MIZSelect(forms.Select):
         label_field="",
         search_lookup="",
         create_field="",
-        multiple=False,
         changelist_url="",
         add_url="",
         edit_url="",
@@ -47,7 +46,6 @@ class MIZSelect(forms.Select):
               term to filter the results
             create_field: the name of the model field used to create new
               model objects with
-            multiple: if True, allow selecting multiple options
             changelist_url: URL name of the 'changelist' view for this model
             add_url: URL name of the 'add' view for this model
             edit_url: URL name of the 'change' view for this model
@@ -63,7 +61,6 @@ class MIZSelect(forms.Select):
         self.label_field = label_field or getattr(self.model, "name_field", "name")
         self.search_lookup = search_lookup or f"{self.label_field}__icontains"
         self.create_field = create_field
-        self.multiple = multiple
         self.changelist_url = changelist_url
         self.add_url = add_url
         self.edit_url = edit_url
@@ -107,7 +104,6 @@ class MIZSelect(forms.Select):
         attrs.update(
             {
                 "is-tomselect": True,
-                "is-multiple": self.multiple,
                 "data-autocomplete-url": self.get_url(),
                 "data-model": f"{opts.app_label}.{opts.model_name}",
                 "data-search-lookup": self.search_lookup,
@@ -166,3 +162,21 @@ class MIZSelectTabular(MIZSelect):
             }
         )
         return attrs
+
+
+class MultipleSelectionMixin:
+    """Enable multiple selection with TomSelect."""
+
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        """Build HTML attributes for the widget."""
+        attrs = super().build_attrs(base_attrs, extra_attrs)  # noqa
+        attrs["is-multiple"] = True
+        return attrs
+
+
+class MIZSelectMultiple(MultipleSelectionMixin, MIZSelect, forms.SelectMultiple):
+    """A MIZSelect widget that allows multiple selection."""
+
+
+class MIZSelectTabularMultiple(MultipleSelectionMixin, MIZSelectTabular, forms.SelectMultiple):
+    """A MIZSelectTabular widget that allows multiple selection."""

@@ -1,6 +1,6 @@
 from django import forms
 
-from mizdb_tomselect.widgets import MIZSelect, MIZSelectTabular
+from mizdb_tomselect.widgets import MIZSelect, MIZSelectMultiple, MIZSelectTabular, MIZSelectTabularMultiple
 
 from .models import Ausgabe, Magazin
 
@@ -25,18 +25,17 @@ class Form(forms.Form):
     )
 
     # Multiple selection:
-    mizselect_multiple = forms.ModelChoiceField(
+    mizselect_multiple = forms.ModelMultipleChoiceField(
         Ausgabe.objects.all(),
-        widget=MIZSelect(Ausgabe, multiple=True, changelist_url="changelist"),
+        widget=MIZSelectMultiple(Ausgabe, changelist_url="changelist"),
         required=False,
     )
-    mizselect_tabular_multiple = forms.ModelChoiceField(
+    mizselect_tabular_multiple = forms.ModelMultipleChoiceField(
         Ausgabe.objects.all(),
-        widget=MIZSelectTabular(
+        widget=MIZSelectTabularMultiple(
             Ausgabe,
             extra_columns={"jahr": "Jahr", "num": "Nummer", "lnum": "lfd.Nummer"},
             label_field_label="Ausgabe",
-            multiple=True,
             add_url="add",
             create_field="name",
             edit_url="edit",
