@@ -273,11 +273,11 @@ Provide a `edit_url` to attach a link to the edit/change page for each selected 
 # urls.py
 urlpatterns = [
     ...
-    path('city/edit/<path:object_id>/', CityChangeView.as_view(), name='city_change'),
+    path('person/edit/<path:object_id>/', PersonChangeView.as_view(), name='person_change'),
 ]
 
 # forms.py
-widget = MIZSelect(City, edit_url='city_change')
+widget = MIZSelect(Person, edit_url='person_change')
 ```
 
 ![Preview of the edit button](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/edit2.png "Edit button preview")
