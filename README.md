@@ -2,7 +2,10 @@
 
 Django autocomplete widgets and views using [TomSelect](https://tom-select.js.org/).
 
+![Example of the MIZSelect widget](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/mizselect.png "MIZSelect preview")
+
 Note that this was written specifically with the [MIZDB](https://github.com/Actionb/MIZDB) app in mind - it may not apply to your app.
+
 <!-- TOC -->
 * [TomSelect for Django (MIZDB)](#tomselect-for-django-mizdb)
   * [Installation](#installation)
@@ -10,6 +13,8 @@ Note that this was written specifically with the [MIZDB](https://github.com/Acti
   * [Widgets](#widgets)
     * [MIZSelect](#mizselect)
     * [MIZSelectTabular](#mizselecttabular)
+      * [Adding more columns](#adding-more-columns)
+    * [MIZSelectMultiple & MIZSelectTabularMultiple](#mizselectmultiple--mizselecttabularmultiple)
   * [Function & Features](#function--features)
     * [Searching](#searching)
     * [Option creation](#option-creation)
@@ -19,6 +24,7 @@ Note that this was written specifically with the [MIZDB](https://github.com/Acti
     * [Filter against values of another field](#filter-against-values-of-another-field)
   * [Development & Demo](#development--demo)
 <!-- TOC -->
+
 ----
 
 ## Installation
@@ -133,13 +139,12 @@ Base autocomplete widget. The arguments of MIZSelect are:
 
 ### MIZSelectTabular
 
-
 This widget displays the results in tabular form. A table header will be added
 to the dropdown. By default, the table contains two columns: one column for the choice 
 value (commonly the "ID" of the option) and one column for the choice label (the 
 human-readable part of the choice).
 
-![Tabular select preview](./assets/mizselect_tabular.png "Tabular select preview")
+![Tabular select preview](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/tabular_default.png "Tabular select preview")
 
 MIZSelectTabular has the following additional arguments:
 
@@ -149,14 +154,36 @@ MIZSelectTabular has the following additional arguments:
 | value_field_label  | `f"{value_field.title()}"`      | table header for the value column   |
 | label_field_label  | `f"{model._meta.verbose_name}"` | table header for the label column   |
 
-#### Adding more columns 
+#### Adding more columns
 
 To add more columns, pass a `result attribute name: column label` mapping to the widget
-argument `extra_columns`.
+argument `extra_columns`. For example: 
+```python
+# models.py
+class Person(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    dob = models.DateField(blank=True, null=True)
+    city = models.ForeignKey("City", on_delete=models.SET_NULL, blank=True, null=True)
 
-The column label is the table header label for a given column.  
 
-The attribute name tells TomSelect what value to look up on a result for the column.
+# forms.py 
+class TabularForm(forms.Form):
+    person = forms.ModelChoiceField(
+            Person.objects.all(),
+            widget=MIZSelectTabular(
+                Person,
+                extra_columns={"dob": "Date of Birth", "city__name": "City"},
+                label_field_label="Name",
+            ),
+            required=False,
+        )
+```
+
+The column label is the table header label for a given column (here: `Date of Birth` and `City`).  
+
+The attribute name tells TomSelect what value to look up on a result for the column (here: model field `dob` and lookup expression `city__name` on the relation field `city`).
+
+![Tabular select with more columns](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/tabular.png "Tabular select with more columns")
 
 **Important**: that means that the result visible to TomSelect must have an attribute
 or property with that name or the column will remain empty. 
@@ -253,33 +280,38 @@ urlpatterns = [
 widget = MIZSelect(City, edit_url='city_change')
 ```
 
+![Preview of the edit button](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/edit2.png "Edit button preview")
+
 ### Filter against values of another field
 
 Use the `filter_by` argument to restrict the available options to the value of 
 another field. The parameter must be a 2-tuple: `(name_of_the_other_form_field, django_field_lookup)`
+
 ```python
 # models.py
 class Person(models.Model):
     name = models.CharField(max_length=50)
-    city = models.ForeignKey("City", on_delete=models.SET_NULL, blank=True, null=True)
+    pob = models.ForeignKey("Place of Birth", on_delete=models.SET_NULL, blank=True, null=True)
     
 class City(models.Model):
     name = models.CharField(max_length=50)
-    is_capitol = models.BooleanField(default=False)
 
 # forms.py
-class PersonsFromCapitolsForm(forms.Form):
-    capitol = forms.ModelChoiceField(queryset=City.objects.filter(is_capitol=True))
+class PersonCityForm(forms.Form):
+    city = forms.ModelChoiceField(queryset=City.objects.filter(is_capitol=True))
     person = forms.ModelChoiceField(
         queryset=Person.objects.all(),
         widget=MIZSelect(
             Person,
-            filter_by=("capitol", "city_id")
+            filter_by=("city", "pob_id")
         )
     )
 ```
 This will result in the Person result queryset to be filtered against 
-`city_id` with the current value of the `capitol` formfield.  
+`pob_id` with the current value of the `city` formfield.
+
+![Example for the filter_by argument](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/filterby.png "Filtering example")
+
 NOTE: When using `filter_by`, the declaring element now **requires** that the other field 
 provides a value. If the other field does not have a value, the search will not 
 return any results.
