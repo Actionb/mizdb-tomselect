@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import Ausgabe
+from .models import City, Person
 
 
-@admin.register(Ausgabe)
-class AusgabenAdmin(admin.ModelAdmin):
-    pass
+@admin.register(City, Person)
+class Admin(admin.ModelAdmin):
+    search_fields = ["name"]

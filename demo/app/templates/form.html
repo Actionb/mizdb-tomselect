@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<p>{{ description }}:</p>
+{% csrf_token %}
+<form>
+    {% for field in form %}
+        <div class="mb-3">{{ field.label_tag }}{{field}}</div>
+    {% endfor %}
+    <div class="mt-2"><button type="submit" class="btn btn-success">Submit</button></div>
+</form>
+<p class="text-end fw-lighter text-secondary">admin page credentials: username="admin", password="admin"</p>
+{% endblock %}

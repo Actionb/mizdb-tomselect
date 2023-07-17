@@ -2,58 +2,103 @@ from django import forms
 
 from mizdb_tomselect.widgets import MIZSelect, MIZSelectMultiple, MIZSelectTabular, MIZSelectTabularMultiple
 
-from .models import Ausgabe, Magazin
+from .models import City, Person
 
 
-class Form(forms.Form):
-    mizselect = forms.ModelChoiceField(
-        Ausgabe.objects.all(),
-        widget=MIZSelect(Ausgabe, changelist_url="changelist", add_url="add", create_field="name"),
-        required=False,
-    )
+class MIZSelectForm(forms.Form):
+    mizselect = forms.ModelChoiceField(Person.objects.all(), widget=MIZSelect(Person), required=False)
+
+
+class MIZSelectTabularForm(forms.Form):
     mizselect_tabular = forms.ModelChoiceField(
-        Ausgabe.objects.all(),
+        Person.objects.all(),
+        label="Tabular with the default columns",
+        widget=MIZSelectTabular(Person, label_field_label="Name"),
+        required=False,
+    )
+    extra_columns = forms.ModelChoiceField(
+        Person.objects.all(),
+        label="Tabular with extra columns",
         widget=MIZSelectTabular(
-            Ausgabe,
-            extra_columns={"jahr": "Jahr", "num": "Nummer", "lnum": "lfd.Nummer"},
-            label_field_label="Ausgabe",
-            changelist_url="changelist",
-            add_url="add",
-            edit_url="edit",
+            Person,
+            extra_columns={"dob": "Date of Birth", "city__name": "City"},
+            label_field_label="Name",
         ),
         required=False,
     )
 
-    # Multiple selection:
-    mizselect_multiple = forms.ModelMultipleChoiceField(
-        Ausgabe.objects.all(),
-        widget=MIZSelectMultiple(Ausgabe, changelist_url="changelist"),
-        required=False,
+
+class SelectMultipleForm(forms.Form):
+    """Form with multiple selection."""
+
+    MIZSelectMultiple = forms.ModelMultipleChoiceField(
+        Person.objects.all(),
+        widget=MIZSelectMultiple(Person),
+        label="MIZSelectMultiple",
     )
-    mizselect_tabular_multiple = forms.ModelMultipleChoiceField(
-        Ausgabe.objects.all(),
-        widget=MIZSelectTabularMultiple(
-            Ausgabe,
-            extra_columns={"jahr": "Jahr", "num": "Nummer", "lnum": "lfd.Nummer"},
-            label_field_label="Ausgabe",
-            add_url="add",
-            create_field="name",
-            edit_url="edit",
-        ),
-        required=False,
+    MIZSelectTabularMultiple = forms.ModelMultipleChoiceField(
+        Person.objects.all(),
+        widget=MIZSelectTabularMultiple(Person),
+        label="MIZSelectTabularMultiple",
     )
 
 
 class FilteredForm(forms.Form):
-    magazin = forms.ModelChoiceField(queryset=Magazin.objects.all(), widget=MIZSelect(Magazin))
-    ausgabe = forms.ModelChoiceField(
-        Ausgabe.objects.all(),
-        widget=MIZSelect(
-            Ausgabe,
-            changelist_url="changelist",
-            add_url="add",
-            create_field="name",
-            filter_by=("magazin", "magazin_id"),
+    """Form showing filtering by another form field."""
+
+    city = forms.ModelChoiceField(queryset=City.objects.all(), widget=MIZSelect(City))
+    person = forms.ModelChoiceField(
+        Person.objects.all(),
+        widget=MIZSelectTabular(
+            Person,
+            extra_columns={"city__name": "City"},
+            filter_by=("city", "city_id"),
+            attrs={"data-placeholder": "Please select a city first"},
         ),
         required=False,
+    )
+
+
+class AddButtonForm(forms.Form):
+    """Form showing the add button and option creation."""
+
+    add_link = forms.ModelChoiceField(
+        Person.objects.all(),
+        widget=MIZSelect(
+            Person,
+            add_url="admin:app_person_add",
+            attrs={"data-placeholder": "Click the 'add' button"},
+        ),
+        label="Navigating to the 'add' page given by `add_url`",
+        required=False,
+    )
+    via_ajax = forms.ModelChoiceField(
+        Person.objects.all(),
+        widget=MIZSelect(
+            Person,
+            add_url="admin:app_person_add",
+            create_field="name",
+            attrs={"data-placeholder": "Type a name and then click the 'add' button"},
+        ),
+        label="Using an AJAX request",
+        required=False,
+    )
+
+
+class ChangelistButtonForm(forms.Form):
+    """Form showing the changelist button."""
+
+    person = forms.ModelChoiceField(
+        Person.objects.all(), widget=MIZSelect(Person, changelist_url="admin:app_person_changelist")
+    )
+
+
+class EditButtonForm(forms.Form):
+    """Form showing the edit buttons."""
+
+    single = forms.ModelChoiceField(
+        Person.objects.all(), widget=MIZSelect(Person, edit_url="admin:app_person_change"), required=False
+    )
+    multiple = forms.ModelMultipleChoiceField(
+        Person.objects.all(), widget=MIZSelectMultiple(Person, edit_url="admin:app_person_change"), required=False
     )

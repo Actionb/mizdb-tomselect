@@ -32,3 +32,9 @@ init:
 	pip install -U -r requirements.txt
 	npm install --include=dev
 	npm run build
+
+.PHONY: init-demo
+init-demo:
+	rm demo/db.sqlite3
+	python demo/manage.py migrate
+	DJANGO_SUPERUSER_PASSWORD="admin" python demo/manage.py createsuperuser  --username=admin --email=foo@bar.com --noinput

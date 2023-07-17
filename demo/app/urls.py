@@ -15,18 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from django.views.generic import FormView
+from django.urls import include, path
 
-from .forms import FilteredForm, Form
-from .views import DemoAutocompleteView, add_view, changelist_view, edit_view
+from .views import DemoAutocompleteView, IndexView, demo_views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("", FormView.as_view(form_class=Form, template_name="base.html"), name="demo"),
+    path("", IndexView.as_view(), name="index"),
+    path("", include(demo_views.urls)),
     path("autocomplete/", DemoAutocompleteView.as_view(), name="autocomplete"),
-    path("changelist/", changelist_view, name="changelist"),
-    path("add/", add_view, name="add"),
-    path("edit/<path:object_id>/", edit_view, name="edit"),
-    path("filtered/", FormView.as_view(form_class=FilteredForm, template_name="base.html"), name="filtered"),
+    path("admin/", admin.site.urls),
 ]

@@ -294,7 +294,7 @@ source venv/bin/activate
 make init
 ```
 
-Then see the demo for a preview: `python demo/manage.py runserver`
+See the demo for a preview: run `make init-demo` and then start the demo server `python demo/manage.py runserver`.
 
 Run tests with `make test` or `make tox`. To install required browsers for playwright: `playwright install`.
 See the makefile for other commands.
