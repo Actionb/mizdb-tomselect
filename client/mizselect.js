@@ -6,6 +6,7 @@ import dropdown_header from 'tom-select/src/plugins/dropdown_header/plugin'
 import dropdown_input from 'tom-select/src/plugins/dropdown_input/plugin'
 import remove_button from 'tom-select/src/plugins/remove_button/plugin'
 import virtual_scroll from 'tom-select/src/plugins/virtual_scroll/plugin'
+import no_backspace_delete from 'tom-select/src/plugins/no_backspace_delete/plugin'
 import edit_button from './plugins/edit_button'
 /* eslint-enable camelcase */
 
@@ -14,6 +15,7 @@ TomSelect.define('dropdown_header', dropdown_header)
 TomSelect.define('dropdown_input', dropdown_input)
 TomSelect.define('remove_button', remove_button)
 TomSelect.define('virtual_scroll', virtual_scroll)
+TomSelect.define('no_backspace_delete', no_backspace_delete)
 TomSelect.define('edit_button', edit_button)
 
 /**
@@ -117,7 +119,8 @@ function getPlugins (elem) {
     dropdown_input: null,
     virtual_scroll: null,
     edit_button: { editUrl: elem.dataset.editUrl },
-    remove_button: { title: 'Entfernen', label: removeImage }
+    remove_button: { title: 'Entfernen', label: removeImage },
+    no_backspace_delete: null
   }
 
   if (elem.hasAttribute('is-multiple')) {

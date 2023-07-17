@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- use no_backspace_delete plugin by default
+
 ## 0.5.0 (2023-07-17)
 
 - add multiple selection variants of the widgets
