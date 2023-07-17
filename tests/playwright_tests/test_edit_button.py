@@ -13,7 +13,7 @@ from tests.testapp.models import Person
 class EditButtonForm(forms.Form):
     """Test form with a widget that adds 'edit' buttons to the selected items."""
 
-    field = forms.ModelChoiceField(
+    field = forms.ModelMultipleChoiceField(
         Person.objects.all(),
         widget=MIZSelectMultiple(
             model=Person,
@@ -25,9 +25,18 @@ class EditButtonForm(forms.Form):
     )
 
 
+class InitialDataFormView(FormView):
+    form_class = EditButtonForm
+    template_name = "base.html"
+
+    def get_initial(self):
+        return {"field": [Person.objects.first(), Person.objects.last()]}
+
+
 urlpatterns = [
     path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
     path("edit_button/", FormView.as_view(form_class=EditButtonForm, template_name="base.html"), name="edit"),
+    path("edit_button_initial/", InitialDataFormView.as_view(), name="edit_initial"),
     path("edit/<path:object_id>/", lambda r, object_id: HttpResponse("This is a dummy edit page."), name="edit_page"),
 ]
 
@@ -89,3 +98,21 @@ class TestEditButton:
         search_input.blur()  # close the dropdown
         edit_buttons.first.click()
         expect(dropdown).not_to_be_visible()
+
+
+@pytest.mark.parametrize("view_name", ["edit_initial"])
+@pytest.mark.usefixtures("test_data")
+class TestEditButtonInitial:
+    def test_initially_selected_edit_buttons(self, selected, edit_buttons):
+        """Assert that initially selected items have edit buttons."""
+        assert edit_buttons.count() == 2
+        for item in selected.all():
+            expect(get_edit_buttons(item)).to_have_count(1)
+
+    def test_initial_edit_buttons_link_to_edit_page(self, edit_buttons, selected_values):
+        """
+        Assert that the edit buttons of the initially selected items link to
+        their edit pages.
+        """
+        for item, value in selected_values:
+            expect(get_edit_buttons(item)).to_have_attribute("href", reverse("edit_page", args=[value]))

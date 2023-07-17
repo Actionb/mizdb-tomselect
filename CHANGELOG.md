@@ -5,6 +5,7 @@
 - add multiple selection variants of the widgets
 - fix widget not rendering initially selected choices
 - reworked demo
+- fix edit button href not being set for initial items
 
 ## 0.4.0 (2023-07-10)
 

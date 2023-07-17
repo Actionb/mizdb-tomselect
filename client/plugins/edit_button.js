@@ -70,13 +70,9 @@ export default function (userOptions) {
     this.settings.render.item = (data, escape) => {
       const item = getDom(orig.call(this, data, escape))
       const editButton = getDom(html)
+      editButton.href = options.getEditUrl(options, item, data[this.settings.valueField])
       editButton.addEventListener('click', (e) => {
         e.stopPropagation() // do not show the dropdown
-      })
-      this.on('item_add', (value, _item) => {
-        if (item === _item) {
-          editButton.href = options.getEditUrl(options, item, value)
-        }
       })
       item.appendChild(editButton)
       return item
