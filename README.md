@@ -179,11 +179,11 @@ class TabularForm(forms.Form):
         )
 ```
 
+![Tabular select with more columns](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/tabular.png "Tabular select with more columns")
+
 The column label is the table header label for a given column (here: `Date of Birth` and `City`).  
 
 The attribute name tells TomSelect what value to look up on a result for the column (here: model field `dob` and lookup expression `city__name` on the relation field `city`).
-
-![Tabular select with more columns](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/tabular.png "Tabular select with more columns")
 
 **Important**: that means that the result visible to TomSelect must have an attribute
 or property with that name or the column will remain empty. 
