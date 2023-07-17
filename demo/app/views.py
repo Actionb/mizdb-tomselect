@@ -69,7 +69,7 @@ class FormView(DemoViewsMixin, BaseFormView):
     template_name = "form.html"
 
     def get_initial(self):
-        return self.request.GET
+        return dict(self.request.GET.lists())
 
     def get_context_data(self, **kwargs):
         description = demo_views.views[self.__class__][-1]

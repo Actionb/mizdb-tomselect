@@ -35,11 +35,13 @@ class SelectMultipleForm(forms.Form):
         Person.objects.all(),
         widget=MIZSelectMultiple(Person),
         label="MIZSelectMultiple",
+        required=False,
     )
     MIZSelectTabularMultiple = forms.ModelMultipleChoiceField(
         Person.objects.all(),
         widget=MIZSelectTabularMultiple(Person),
         label="MIZSelectTabularMultiple",
+        required=False,
     )
 
 
