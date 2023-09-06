@@ -1,8 +1,9 @@
 # Changelog
 
-## [unreleased]
+## 0.5.1 (2023-09-06)
 
 - use no_backspace_delete plugin by default
+- change add button CSS class to `mizselect-add-btn` to make it more specific
 
 ## 0.5.0 (2023-07-17)
 

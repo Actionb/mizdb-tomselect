@@ -185,7 +185,7 @@ function attachFooter (ts, elem) {
 
     if (addURL) {
       const addBtn = document.createElement('a')
-      addBtn.classList.add('btn', 'btn-success', 'add-btn', 'd-none')
+      addBtn.classList.add('btn', 'btn-success', 'mizselect-add-btn', 'd-none')
       addBtn.href = addURL
       addBtn.target = '_blank'
       addBtn.innerHTML = 'Hinzufügen'

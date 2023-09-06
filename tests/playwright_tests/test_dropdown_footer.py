@@ -92,7 +92,7 @@ def dropdown_footer(_page, wrapper_click):
 @pytest.fixture
 def add_button(dropdown_footer):
     """Return the 'add' button in the dropdown footer."""
-    return dropdown_footer.locator(".add-btn")
+    return dropdown_footer.locator(".mizselect-add-btn")
 
 
 @pytest.fixture
