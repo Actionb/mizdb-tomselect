@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0 (2023-09-08)
+
+- add separate init function which also checks whether the element is already initialized 
+- added mutation observer to initialize inserted mizselect elements
+
 ## 0.5.1 (2023-09-06)
 
 - use no_backspace_delete plugin by default
