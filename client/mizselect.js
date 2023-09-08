@@ -301,5 +301,17 @@ function init (elem) {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
-  document.querySelectorAll('[is-tomselect]').forEach(init)
+  // Exclude elements which contain '__prefix__' as those are part of empty
+  // form templates for django formsets:
+  document.querySelectorAll('[is-tomselect]:not([id*="__prefix__"]').forEach(init)
 })
+
+new window.MutationObserver(mutations => {
+  mutations.forEach(mutation =>
+    mutation.addedNodes.forEach(node => {
+      // Exclude elements which contain '__prefix__' as those are part of empty
+      // form templates for django formsets:
+      if (node instanceof window.HTMLElement && node.matches('[is-tomselect]:not([id*="__prefix__"]')) init(node)
+    })
+  )
+}).observe(document.documentElement, { childList: true, subtree: true })
