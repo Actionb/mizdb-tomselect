@@ -268,32 +268,38 @@ function attachFooter (ts, elem) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  document.querySelectorAll('[is-tomselect]').forEach((elem) => {
-    const ts = new TomSelect(elem, getSettings(elem))
-    attachFooter(ts, elem)
+function init (elem) {
+  if (elem.tomselect) {
+    // Already initialized
+    return
+  }
+  const ts = new TomSelect(elem, getSettings(elem))
+  attachFooter(ts, elem)
 
-    // Reload the default/initial options when the input is cleared:
-    ts.on('type', (query) => {
-      if (!query) {
-        ts.load('')
-        ts.refreshOptions()
-      }
-    })
-    if (elem.filterByElem) {
-      // Force re-fetching the options when the value of the filterBy element
-      // changes.
-      elem.filterByElem.addEventListener('change', () => {
-        // Reset the pagination (query:url) mapping of the virtual_scroll
-        // plugin. This is necessary because the filter value is not part of
-        // the query string, which means that the mapping might return an URL
-        // that is incorrect for the current filter.
-        ts.getUrl(null)
-        // Clear all options, but leave the selected items.
-        ts.clearOptions()
-        // Remove the flag that this element has already been loaded.
-        ts.wrapper.classList.remove('preloaded')
-      })
+  // Reload the default/initial options when the input is cleared:
+  ts.on('type', (query) => {
+    if (!query) {
+      ts.load('')
+      ts.refreshOptions()
     }
   })
+  if (elem.filterByElem) {
+    // Force re-fetching the options when the value of the filterBy element
+    // changes.
+    elem.filterByElem.addEventListener('change', () => {
+      // Reset the pagination (query:url) mapping of the virtual_scroll
+      // plugin. This is necessary because the filter value is not part of
+      // the query string, which means that the mapping might return an URL
+      // that is incorrect for the current filter.
+      ts.getUrl(null)
+      // Clear all options, but leave the selected items.
+      ts.clearOptions()
+      // Remove the flag that this element has already been loaded.
+      ts.wrapper.classList.remove('preloaded')
+    })
+  }
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  document.querySelectorAll('[is-tomselect]').forEach(init)
 })
