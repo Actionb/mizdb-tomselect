@@ -276,6 +276,10 @@ function init (elem) {
   const ts = new TomSelect(elem, getSettings(elem))
   attachFooter(ts, elem)
 
+  // Open the dropdown instead of marking an item when clicking on a multi
+  // select item.
+  ts.hook('instead', 'onItemSelect', (evt, item) => false)
+
   // Reload the default/initial options when the input is cleared:
   ts.on('type', (query) => {
     if (!query) {

@@ -1,5 +1,10 @@
 # Changelog
 
+## [unreleased]
+
+- clicking on a selected item in a multi select now opens the dropdown instead of 
+marking the item
+
 ## 0.6.0 (2023-09-08)
 
 - add separate init function which also checks whether the element is already initialized 
