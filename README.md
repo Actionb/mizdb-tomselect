@@ -126,14 +126,14 @@ Base autocomplete widget. The arguments of MIZSelect are:
 | Argument       | Default value                          | Description                                                                                    |
 |----------------|----------------------------------------|------------------------------------------------------------------------------------------------|
 | model          | **required**                           | the model class that provides the choices                                                      |
-| url            | `"autocomplete"`                       | URL pattern name of the autocomplete view                                                      |
+| url            | `"autocomplete"`                       | view name of the autocomplete view                                                             |
 | value_field    | `f"{model._meta.pk.name}"`             | model field that provides the value of an option                                               |
 | label_field    | `getattr(model, "name_field", "name")` | model field that provides the label of an option                                               |
 | search_lookup  | `f"{label_field}__icontains"`          | the lookup to use when filtering the results                                                   |
 | create_field   |                                        | model field to create new objects with ([see below](#ajax-request))                            |
-| changelist_url |                                        | URL name of the changelist view for this model ([see below](#changelist-link))                 |
-| add_url        |                                        | URL name of the add view for this model([see below](#option-creation))                         |
-| edit_url       |                                        | URL name of the edit view for this model([see below](#inline-edit-link))                       |
+| changelist_url |                                        | view name of the changelist view for this model ([see below](#changelist-link))                |
+| add_url        |                                        | view name of the add view for this model([see below](#option-creation))                        |
+| edit_url       |                                        | view name of the edit view for this model([see below](#inline-edit-link))                      |
 | filter_by      |                                        | a 2-tuple defining an additional filter ([see below](#filter-against-values-of-another-field)) |
 
 
@@ -214,8 +214,8 @@ class MyAutocompleteView(AutocompleteView):
 
 ### Option creation
 
-To enable option creation in the dropdown, pass the URL pattern name of the 
-add page of the given model to the widget. This will add an 'Add' button to the
+To enable option creation in the dropdown, pass the view name of the 
+add view for the given model to the widget. This will add an 'Add' button to the
 bottom of the dropdown.
 
 ```python
@@ -252,7 +252,7 @@ Override the view's `create_object` method to change the creation process.
 ### Changelist link
 
 The dropdown will include a link to the changelist of the given model if you
-pass in the URL pattern name of the changelist view.
+pass in the view name for the changelist view.
 
 ```python
 # urls.py

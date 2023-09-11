@@ -33,7 +33,7 @@ class MIZSelect(forms.Select):
 
         Args:
             model: the django model that the choices are derived from
-            url: the URL pattern name of the view that serves the choices and
+            url: the view name of the view that serves the choices and
               handles requests from the TomSelect element
             value_field: the name of the model field that corresponds to the
               choice value of an option (f.ex. 'id'). Defaults to the name of
@@ -46,9 +46,9 @@ class MIZSelect(forms.Select):
               term to filter the results
             create_field: the name of the model field used to create new
               model objects with
-            changelist_url: URL name of the 'changelist' view for this model
-            add_url: URL name of the 'add' view for this model
-            edit_url: URL name of the 'change' view for this model
+            changelist_url: view name of the 'changelist' view for this model
+            add_url: view name of the 'add' view for this model
+            edit_url: view name of the 'change' view for this model
             filter_by: a 2-tuple (form_field_name, field_lookup) to filter the
               results against the value of the form field using the given
               Django field lookup. For example:
@@ -78,15 +78,15 @@ class MIZSelect(forms.Select):
         self.choices = all_choices
         return results
 
-    def _get_url(self, url_name, **kwargs):
+    def _get_url(self, view_name, **kwargs):
         """
-        Reverse the given URL name and return the url.
+        Reverse the given view name and return the url.
 
         Fail silently if the url cannot be reversed.
         """
-        if url_name:
+        if view_name:
             try:
-                return reverse(url_name, **kwargs)
+                return reverse(view_name, **kwargs)
             except NoReverseMatch:
                 pass
         return ""

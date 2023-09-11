@@ -8,10 +8,10 @@ from django.urls import reverse
 
 @pytest.fixture
 def get_url(live_server):
-    """Return the URL for a given URL pattern name on the current live server."""
+    """Return the URL for a given view name on the current live server."""
 
-    def inner(url_name):
-        return live_server.url + reverse(url_name)
+    def inner(view_name):
+        return live_server.url + reverse(view_name)
 
     return inner
 
