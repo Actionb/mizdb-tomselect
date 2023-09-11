@@ -3,7 +3,7 @@ import json
 from urllib.parse import unquote
 
 from django import forms
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 
 class MIZSelect(forms.Select):
@@ -78,24 +78,34 @@ class MIZSelect(forms.Select):
         self.choices = all_choices
         return results
 
+    def _get_url(self, url_name, **kwargs):
+        """
+        Reverse the given URL name and return the url.
+
+        Fail silently if the url cannot be reversed.
+        """
+        if url_name:
+            try:
+                return reverse(url_name, **kwargs)
+            except NoReverseMatch:
+                pass
+        return ""
+
     def get_url(self):
         """Hook to specify the autocomplete URL."""
-        return reverse(self.url)
+        return self._get_url(self.url)
 
     def get_add_url(self):
         """Hook to specify the URL to the model's 'add' page."""
-        if self.add_url:
-            return reverse(self.add_url)
+        return self._get_url(self.add_url)
 
     def get_edit_url(self):
         """Hook to specify the URL to the model's 'change' page."""
-        if self.edit_url:
-            return unquote(reverse(self.edit_url, args=["{pk}"]))
+        return unquote(self._get_url(self.edit_url, args=["{pk}"]))
 
     def get_changelist_url(self):
         """Hook to specify the URL the model's 'changelist' page."""
-        if self.changelist_url:
-            return reverse(self.changelist_url)
+        return self._get_url(self.changelist_url)
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         """Build HTML attributes for the widget."""

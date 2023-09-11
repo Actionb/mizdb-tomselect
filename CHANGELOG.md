@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2 (2023-09-11)
+
+- fail silently when add/edit/changelist URLs cannot be reversed
+
 ## 0.6.1 (2023-09-11)
 
 - clicking on a selected item in a multi select now opens the dropdown instead of 

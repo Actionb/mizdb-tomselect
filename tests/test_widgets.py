@@ -137,6 +137,10 @@ class TestMIZSelect:
         """Assert that the necessary static files are included."""
         assert static_file in str(widget.media)
 
+    def test_get_url_fails_silently(self, widget):
+        """Assert that _get_url fails silently when the view name cannot be reversed."""
+        assert widget._get_url("this-cannot-be-reversed") == ""
+
 
 @pytest.mark.parametrize("widget_class", [MIZSelectTabular])
 class TestTabularMIZSelect:
