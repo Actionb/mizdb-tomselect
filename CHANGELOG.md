@@ -1,9 +1,10 @@
 # Changelog
 
-## [unreleased]
+## 0.6.1 (2023-09-11)
 
 - clicking on a selected item in a multi select now opens the dropdown instead of 
 marking the item
+- the mutation observer now checks children of added nodes
 
 ## 0.6.0 (2023-09-08)
 
