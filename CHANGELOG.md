@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased] 
+## 0.7.0 (2023-09-18) 
 
 - add `can_remove` widget argument which controls whether to include a remove button
 - scroll dropdown into view when opening it
