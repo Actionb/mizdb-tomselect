@@ -133,11 +133,11 @@ function getPlugins (elem) {
   if (elem.hasAttribute('is-tabular')) {
     plugins.dropdown_header = {
       html: function (settings) {
-        let header = `<div class="col-1"><span class="${settings.labelClass}">${settings.valueFieldLabel}</span></div>
-                      <div class="${settings.labelColClass}"><span class="${settings.labelClass}">${settings.labelFieldLabel}</span></div>`
+        let header = `<div class="${settings.labelColClass}"><span class="${settings.labelClass}">${settings.labelFieldLabel}</span></div>`
         for (const h of settings.extraHeaders) {
           header += `<div class="col"><span class="${settings.labelClass}">${h}</span></div>`
         }
+        header += `<div class="col-1"><span class="${settings.labelClass}">${settings.valueFieldLabel}</span></div>`
         return `<div class="${settings.headerClass}"><div class="${settings.titleRowClass}">${header}</div></div>`
       },
       valueFieldLabel: elem.dataset.valueFieldLabel,
@@ -168,11 +168,11 @@ function getRenderTemplates (elem) {
   }
   if (elem.hasAttribute('is-tabular')) {
     templates.option = function (data, escape) {
-      let columns = `<div class="col-1">${data[this.settings.valueField]}</div>
-                     <div class="${this.settings.labelColClass}">${data[this.settings.labelField]}</div>`
+      let columns = `<div class="${this.settings.labelColClass}">${data[this.settings.labelField]}</div>`
       for (const c of this.settings.extraColumns) {
         columns += `<div class="col">${escape(data[c] || '')}</div>`
       }
+      columns += `<div class="col-1">${data[this.settings.valueField]}</div>`
       return `<div class="row">${columns}</div>`
     }
   }

@@ -78,20 +78,20 @@ class TestTabularSelect:
     def test_header_columns(self, header_columns):
         """Assert that the dropdown header has the expected columns."""
         expect(header_columns).to_have_count(2)
-        id_col, label_col = header_columns.all()
-        expect(id_col).to_have_class("col-1")
-        expect(id_col).to_have_text("Id")
+        label_col, id_col = header_columns.all()
         expect(label_col).to_have_class("col")
         expect(label_col).to_have_text("Person")
+        expect(id_col).to_have_class("col-1")
+        expect(id_col).to_have_text("Id")
 
     def test_options_have_columns(self, random_person, option_columns):
         """Assert that the data of the options are assigned to columns."""
         expect(option_columns).to_have_count(2)
-        id_col, label_col = option_columns.all()
-        expect(id_col).to_have_class("col-1")
-        expect(id_col).to_have_text(str(random_person.pk))
+        label_col, id_col = option_columns.all()
         expect(label_col).to_have_class("col")
         expect(label_col).to_have_text(random_person.full_name)
+        expect(id_col).to_have_class("col-1")
+        expect(id_col).to_have_text(str(random_person.pk))
 
 
 @pytest.mark.django_db
@@ -104,9 +104,7 @@ class TestExtraColumns:
     def test_header_columns(self, header_columns):
         """Assert that the dropdown header has the expected columns."""
         expect(header_columns).to_have_count(5)
-        id_col, label_col, first_name_col, dob_col, city_col = header_columns.all()
-        expect(id_col).to_have_class("col-1")
-        expect(id_col).to_have_text("Id")
+        label_col, first_name_col, dob_col, city_col, id_col = header_columns.all()
         expect(label_col).to_have_class("col-5")
         expect(label_col).to_have_text("Last Name")
         expect(first_name_col).to_have_class("col")
@@ -115,13 +113,13 @@ class TestExtraColumns:
         expect(dob_col).to_have_text("Date of Birth")
         expect(city_col).to_have_class("col")
         expect(city_col).to_have_text("City")
+        expect(id_col).to_have_class("col-1")
+        expect(id_col).to_have_text("Id")
 
     def test_options_have_columns(self, random_person, option_columns):
         """Assert that the data of the options are assigned to columns."""
         expect(option_columns).to_have_count(5)
-        id_col, label_col, first_name_col, dob_col, city_col = option_columns.all()
-        expect(id_col).to_have_class("col-1")
-        expect(id_col).to_have_text(str(random_person.pk))
+        label_col, first_name_col, dob_col, city_col, id_col = option_columns.all()
         expect(label_col).to_have_class("col-5")
         expect(label_col).to_have_text(random_person.last_name)
         expect(first_name_col).to_have_class("col")
@@ -130,3 +128,5 @@ class TestExtraColumns:
         expect(dob_col).to_have_text(str(random_person.dob))
         expect(city_col).to_have_class("col")
         expect(city_col).to_have_text(str(random_person.city))
+        expect(id_col).to_have_class("col-1")
+        expect(id_col).to_have_text(str(random_person.pk))
