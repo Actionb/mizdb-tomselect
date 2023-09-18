@@ -6,6 +6,7 @@
 - scroll dropdown into view when opening it
 - remove edit buttons from tab order
 - move id column for tabular selects to the end of a row. This should improve readability when the id column contains 'longer' values.
+- (flex-)wrap buttons in the dropdown footer instead of having them overflow 
 
 ## 0.6.2 (2023-09-11)
 

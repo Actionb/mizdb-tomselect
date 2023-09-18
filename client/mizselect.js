@@ -184,7 +184,7 @@ function attachFooter (ts, elem) {
   const addURL = elem.dataset.addUrl
   if (changelistURL || addURL) {
     const footer = document.createElement('div')
-    footer.classList.add('d-flex', 'mt-1', 'dropdown-footer')
+    footer.classList.add('d-flex', 'mt-1', 'dropdown-footer', 'flex-wrap')
 
     if (addURL) {
       const addBtn = document.createElement('a')
