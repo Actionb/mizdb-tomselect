@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased] 
+
+- add `can_remove` widget argument which controls whether to include a remove button
+
 ## 0.6.2 (2023-09-11)
 
 - fail silently when add/edit/changelist URLs cannot be reversed

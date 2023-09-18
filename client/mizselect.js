@@ -119,8 +119,11 @@ function getPlugins (elem) {
     dropdown_input: null,
     virtual_scroll: null,
     edit_button: { editUrl: elem.dataset.editUrl },
-    remove_button: { title: 'Entfernen', label: removeImage },
     no_backspace_delete: null
+  }
+
+  if (elem.hasAttribute('can-remove')) {
+    plugins.remove_button = { title: 'Entfernen', label: removeImage }
   }
 
   if (elem.hasAttribute('is-multiple')) {

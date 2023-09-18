@@ -26,6 +26,7 @@ class MIZSelect(forms.Select):
         add_url="",
         edit_url="",
         filter_by=(),
+        can_remove=True,
         **kwargs,
     ):
         """
@@ -53,6 +54,7 @@ class MIZSelect(forms.Select):
               results against the value of the form field using the given
               Django field lookup. For example:
                ('foo', 'bar__id') => results.filter(bar__id=data['foo'])
+            can_remove: if True, use the TomSelect Remove Button plugin
             kwargs: additional keyword arguments passed to forms.Select
         """
         self.model = model
@@ -65,6 +67,7 @@ class MIZSelect(forms.Select):
         self.add_url = add_url
         self.edit_url = edit_url
         self.filter_by = filter_by
+        self.can_remove = can_remove
         super().__init__(**kwargs)
 
     def optgroups(self, name, value, attrs=None):
@@ -124,6 +127,7 @@ class MIZSelect(forms.Select):
                 "data-add-url": self.get_add_url() or "",
                 "data-edit-url": self.get_edit_url() or "",
                 "data-filter-by": json.dumps(list(self.filter_by)),
+                "can-remove": self.can_remove,
             }
         )
         return attrs

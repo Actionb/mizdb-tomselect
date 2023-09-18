@@ -20,9 +20,17 @@ class MIZSelectForm(forms.Form):
     )
 
 
+class NoRemoveForm(forms.Form):
+    field = forms.ModelChoiceField(
+        Person.objects.all(),
+        widget=MIZSelect(model=Person, url="autocomplete", can_remove=False),
+    )
+
+
 urlpatterns = [
     path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
     path("mizselect/", FormView.as_view(form_class=MIZSelectForm, template_name="base.html"), name="mizselect"),
+    path("noremove/", FormView.as_view(form_class=NoRemoveForm, template_name="base.html"), name="noremove"),
 ]
 
 pytestmark = [pytest.mark.pw, pytest.mark.urls(__name__)]
@@ -76,3 +84,12 @@ class TestMIZSelect:
     def test_dropdown_classes(self, dropdown):
         """Assert that the dropdown has the expected classes."""
         expect(dropdown).to_have_class(re.compile("p-2"))
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("test_data")
+@pytest.mark.parametrize("select_count", [1])
+@pytest.mark.parametrize("view_name", ["noremove"])
+def test_can_remove_is_true(view_name, select_count, select_options, selected):
+    """Assert that the selected item has no remove button if can_remove is True."""
+    expect(selected.first.locator(".remove")).not_to_be_attached()
