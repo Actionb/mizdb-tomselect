@@ -62,7 +62,7 @@ export default function (userOptions) {
 
   if (!options.editUrl) return
 
-  const html = `<a class="${options.className}" title="${options.title}" target="_blank">${options.label}</a>`
+  const html = `<a class="${options.className}" title="${options.title}" target="_blank" tabindex="-1">${options.label}</a>`
 
   this.hook('after', 'setupTemplates', () => {
     const orig = this.settings.render.item
