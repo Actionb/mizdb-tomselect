@@ -305,6 +305,11 @@ function init (elem) {
       ts.wrapper.classList.remove('preloaded')
     })
   }
+
+  // Scroll the dropdown into view when opening it.
+  // Note that this doesn't work well when opening the dropdown for the first
+  // time since the options will still be loaded.
+  ts.on('dropdown_open', (dropdown) => dropdown.scrollIntoView())
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
