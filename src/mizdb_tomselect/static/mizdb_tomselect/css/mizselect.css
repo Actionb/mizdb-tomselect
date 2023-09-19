@@ -20,10 +20,7 @@
 .edit {
     border-left: 1px solid #dee2e6;
     padding: 0 5px;
-}
-
-.edit:not(:last-child) {
-  margin-left: 5px;
+    margin-left: 5px;
 }
 
 .edit:hover {
