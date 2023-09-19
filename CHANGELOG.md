@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 (2023-09-19)
+
+- rework scrolling when dropdown opens: only scroll when the bottom of the 
+dropdown doesn't fit on the screen. The previous scrolling was 'too aggressive'.
+
 ## 0.7.0 (2023-09-18) 
 
 - add `can_remove` widget argument which controls whether to include a remove button
