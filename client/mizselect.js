@@ -306,10 +306,16 @@ function init (elem) {
     })
   }
 
-  // Scroll the dropdown into view when opening it.
-  // Note that this doesn't work well when opening the dropdown for the first
-  // time since the options will still be loaded.
-  ts.on('dropdown_open', (dropdown) => dropdown.scrollIntoView())
+  // When necessary, scroll the dropdown into view when opening it.
+  ts.on('dropdown_open', (dropdown) => {
+    const rect = dropdown.getBoundingClientRect()
+    // The dropdown may not have reached its full height (still loading options)
+    // yet, so using rect.bottom now may give a value that is too low.
+    // Instead, calculate the bottom position from the top plus a fixed amount.
+    // If the bottom end of the dropdown is outside the windows interior height,
+    // scroll the dropdown into the center of the view.
+    if (rect.top + 400 > window.innerHeight) dropdown.scrollIntoView({ block: 'center' })
+  })
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
