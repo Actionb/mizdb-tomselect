@@ -56,7 +56,9 @@ export default function (userOptions) {
     editUrl: '',
     editUrlPlaceholder: '{pk}',
     getEditUrl: (pluginOptions, item, value) => {
-      return pluginOptions.editUrl.replace(pluginOptions.editUrlPlaceholder, value)
+      const url = new URL(pluginOptions.editUrl.replace(pluginOptions.editUrlPlaceholder, value), window.location.href)
+      url.searchParams.set('_popup', '1')
+      return url
     }
   }, userOptions)
 
@@ -71,8 +73,16 @@ export default function (userOptions) {
       const item = getDom(orig.call(this, data, escape))
       const editButton = getDom(html)
       editButton.href = options.getEditUrl(options, item, data[this.settings.valueField])
+      editButton.id = `id_edit_button_${this.input.dataset.model}_${data[this.settings.valueField]}`
+
       editButton.addEventListener('click', (e) => {
         e.stopPropagation() // do not show the dropdown
+        e.preventDefault()
+        const popup = window.open(editButton.href, editButton.id)
+        popup.focus()
+      })
+      editButton.addEventListener('popupDismissed', (e) => {
+        item.querySelector('span').textContent = e.detail.data.text
       })
       item.appendChild(editButton)
       return item

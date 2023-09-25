@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- added popup response that updates the form when modifying related objects via the add and edit buttons
+
 ## 0.7.1 (2023-09-19)
 
 - rework scrolling when dropdown opens: only scroll when the bottom of the 

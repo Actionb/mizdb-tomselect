@@ -4,11 +4,13 @@ from django import http, views
 from django.apps import apps
 from django.contrib.auth import get_permission_codename
 from django.db import transaction
+from django.template.response import TemplateResponse
 
 SEARCH_VAR = "q"
 SEARCH_LOOKUP_VAR = "sl"
 FILTERBY_VAR = "f"
 VALUES_VAR = "vs"
+IS_POPUP_VAR = "_popup"
 
 PAGE_VAR = "p"
 PAGE_SIZE = 20
@@ -109,3 +111,60 @@ class AutocompleteView(views.generic.list.BaseListView):
         with transaction.atomic():
             obj = self.create_object(request.POST)
         return http.JsonResponse({"pk": obj.pk, "text": str(obj)})
+
+
+class PopupResponseMixin(views.generic.edit.ModelFormMixin):
+    """
+    A view mixin that handles the response for an add or edit popup.
+
+    Upon posting a form, if IS_POPUP_VAR is present in the request data, return
+    a TemplateResponse with the popup response template.
+    That template loads a javascript that updates the form of the opener window
+    that created the popup. The popup window or tab is then closed.
+
+    To make use of this mixin:
+
+        1. subclass your CreateView/UpdateView with it:
+
+            class MyCreateView(PopupResponseMixin, CreateView):
+                ...
+
+        2. include a hidden field in the add/change form template to flag the
+           form as a popup form:
+
+            <form>
+            ...
+            {% if is_popup %}
+                <input type="hidden" name="{{ is_popup_var }}" value="1">
+            {% endif %}
+            ...
+            </form>
+
+    """
+
+    popup_response_template = "mizdb_tomselect/popup_response.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        request = self.request  # noqa
+        ctx["is_popup"] = IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET
+        ctx["is_popup_var"] = IS_POPUP_VAR
+        return ctx
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        request = self.request  # noqa
+        if IS_POPUP_VAR in request.POST:
+            return TemplateResponse(
+                request,
+                self.popup_response_template,
+                {
+                    "popup_response_data": json.dumps(
+                        {
+                            "value": str(self.object.serializable_value(self.object._meta.pk.attname)),
+                            "text": str(self.object),
+                        }
+                    )
+                },
+            )
+        return response

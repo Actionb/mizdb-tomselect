@@ -17,11 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from .views import DemoAutocompleteView, IndexView, demo_views
+from .views import DemoAutocompleteView, IndexView, PersonCreateView, PersonEditView, demo_views
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
     path("", include(demo_views.urls)),
     path("autocomplete/", DemoAutocompleteView.as_view(), name="autocomplete"),
     path("admin/", admin.site.urls),
+    path("add/", PersonCreateView.as_view(), name="add_person"),
+    path("edit/<path:pk>/", PersonEditView.as_view(), name="edit_person"),
 ]

@@ -9,8 +9,9 @@
 </head>
 <body>
 <div class="container">
-    <form>
+    <form method="post">
         {% csrf_token %}
+        {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
         {{ form.as_div }}
         <button type="submit" class="btn btn-success">Save</button>
     </form>

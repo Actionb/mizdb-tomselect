@@ -2,12 +2,12 @@
 
 from collections import OrderedDict
 
-from django.urls import path
+from django.urls import path, reverse_lazy
+from django.views.generic import CreateView, TemplateView, UpdateView
 from django.views.generic import FormView as BaseFormView
-from django.views.generic import TemplateView
 from django.views.generic.base import ContextMixin
 
-from mizdb_tomselect.views import AutocompleteView
+from mizdb_tomselect.views import AutocompleteView, PopupResponseMixin
 
 from .forms import (
     AddButtonForm,
@@ -18,6 +18,7 @@ from .forms import (
     MIZSelectTabularForm,
     SelectMultipleForm,
 )
+from .models import Person
 
 
 class DemoViewsRegistry:
@@ -113,3 +114,18 @@ class ChangelistButtonView(FormView):
 @register("edit-button", "Edit Buttons", "A form showing the edit buttons")
 class EditButtonView(FormView):
     form_class = EditButtonForm
+
+
+class PersonViewMixin:
+    model = Person
+    fields = ["name"]
+    template_name = "model_form.html"
+    success_url = reverse_lazy("index")
+
+
+class PersonCreateView(PopupResponseMixin, PersonViewMixin, CreateView):
+    pass
+
+
+class PersonEditView(PopupResponseMixin, PersonViewMixin, UpdateView):
+    pass

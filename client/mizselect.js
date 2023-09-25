@@ -164,6 +164,9 @@ function getRenderTemplates (elem) {
     },
     no_more_results: function (data, escape) {
       return '<div class="no-more-results">Keine weiteren Ergebnisse</div>'
+    },
+    item: function (data, escape) {
+      return '<div><span>' + escape(data[this.settings.labelField]) + '</span></div>'
     }
   }
   if (elem.hasAttribute('is-tabular')) {
@@ -187,12 +190,29 @@ function attachFooter (ts, elem) {
     footer.classList.add('d-flex', 'mt-1', 'dropdown-footer', 'flex-wrap')
 
     if (addURL) {
+      // A helper function that first adds a new option with the given value and
+      // text, and then selects that new option.
+      function addAndSelectNewOption (value, text) {
+        const data = {}
+        data[ts.settings.valueField] = value
+        data[ts.settings.labelField] = text
+        ts.addOption(data, true)
+        ts.setCaret(ts.caretPos)
+        ts.addItem(value)
+      }
       const addBtn = document.createElement('a')
       addBtn.classList.add('btn', 'btn-success', 'mizselect-add-btn', 'd-none')
-      addBtn.href = addURL
+
+      const url = new URL(addURL, window.location.href)
+      url.searchParams.set('_popup', '1')
+      addBtn.href = url
+
+      addBtn.id = `id_add_button_${elem.id}`
       addBtn.target = '_blank'
       addBtn.innerHTML = 'Hinzufügen'
       footer.appendChild(addBtn)
+
+      // After loading new options, check if the button should be shown.
       ts.on('load', () => {
         if (ts.settings.showCreateOption) {
           addBtn.classList.remove('d-none')
@@ -200,6 +220,8 @@ function attachFooter (ts, elem) {
           addBtn.classList.add('d-none')
         }
       })
+
+      // Update the add button text when the user is typing.
       ts.on('type', (query) => {
         if (query) {
           addBtn.innerHTML = `'${query}' hinzufügen...`
@@ -207,17 +229,15 @@ function attachFooter (ts, elem) {
           addBtn.innerHTML = 'Hinzufügen'
         }
       })
+      // Reset the add button text when the dropdown is closed.
       ts.on('blur', () => { addBtn.innerHTML = 'Hinzufügen' })
 
-      // If given a create field, try adding new model objects via AJAX request.
+      // Handle clicking the button.
       const createField = elem.dataset.createField
-      if (createField) {
-        addBtn.addEventListener('click', (e) => {
-          if (!ts.lastValue) {
-            // No search term: just open the add page.
-            return
-          }
-          e.preventDefault()
+      addBtn.addEventListener('click', (e) => {
+        e.preventDefault()
+        // If given a create field, try adding new model objects via AJAX request.
+        if (ts.lastValue && createField) {
           const form = new FormData()
           form.append('create-field', createField)
           form.append(createField, ts.lastValue)
@@ -236,15 +256,20 @@ function attachFooter (ts, elem) {
               }
               return response.json()
             }).then(json => {
-              const data = {}
-              data[ts.settings.valueField] = json.pk
-              data[ts.settings.labelField] = json.text
-              ts.addOption(data, true)
-              ts.setCaret(ts.caretPos)
-              ts.addItem(json.pk)
+              addAndSelectNewOption(json.pk, json.text)
             }).catch((error) => console.log(error))
-        })
-      }
+        } else {
+          // No search term or no createField set: just open the add page.
+          const popup = window.open(addBtn.href, addBtn.id)
+          popup.focus()
+        }
+      })
+
+      // Handle the creation of a new object from a popup. Add the object to the
+      // available options and select it.
+      addBtn.addEventListener('popupDismissed', (e) => {
+        addAndSelectNewOption(e.detail.data.value, e.detail.data.text)
+      })
     }
 
     if (changelistURL) {
@@ -257,7 +282,7 @@ function attachFooter (ts, elem) {
       ts.on('type', (query) => {
         // TODO: include value of filterBy in query
         if (query) {
-          // Update the URL to the changelist to include the query
+          // Update the URL to the changelist to include the query.
           const queryString = new URLSearchParams({ q: query }).toString()
           changelistLink.href = `${changelistURL}?${queryString}`
         } else {
@@ -334,3 +359,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     )
   }).observe(document.documentElement, { childList: true, subtree: true })
 })
+
+window.dismissPopup = (popup, data) => {
+  const dismissEvent = new window.CustomEvent('popupDismissed', { detail: { data } })
+  const btn = document.getElementById(popup.name)
+  btn.dispatchEvent(dismissEvent)
+  popup.close()
+}

@@ -68,7 +68,7 @@ class AddButtonForm(forms.Form):
         Person.objects.all(),
         widget=MIZSelect(
             Person,
-            add_url="admin:app_person_add",
+            add_url="add_person",
             attrs={"data-placeholder": "Click the 'add' button"},
         ),
         label="Navigating to the 'add' page given by `add_url`",
@@ -78,7 +78,7 @@ class AddButtonForm(forms.Form):
         Person.objects.all(),
         widget=MIZSelect(
             Person,
-            add_url="admin:app_person_add",
+            add_url="add_person",
             create_field="name",
             attrs={"data-placeholder": "Type a name and then click the 'add' button"},
         ),
@@ -99,8 +99,8 @@ class EditButtonForm(forms.Form):
     """Form showing the edit buttons."""
 
     single = forms.ModelChoiceField(
-        Person.objects.all(), widget=MIZSelect(Person, edit_url="admin:app_person_change"), required=False
+        Person.objects.all(), widget=MIZSelect(Person, edit_url="edit_person"), required=False
     )
     multiple = forms.ModelMultipleChoiceField(
-        Person.objects.all(), widget=MIZSelectMultiple(Person, edit_url="admin:app_person_change"), required=False
+        Person.objects.all(), widget=MIZSelectMultiple(Person, edit_url="edit_person"), required=False
     )

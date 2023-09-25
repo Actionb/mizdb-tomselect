@@ -3,19 +3,24 @@ from unittest.mock import Mock, patch
 from urllib.parse import urlencode
 
 import pytest
+from django import forms
 from django.db.models.sql.where import NothingNode
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.template.response import TemplateResponse
 from django.test import Client
 from django.urls import path, reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.generic import CreateView, UpdateView
 
 from mizdb_tomselect.views import (
     FILTERBY_VAR,
+    IS_POPUP_VAR,
     PAGE_VAR,
     SEARCH_LOOKUP_VAR,
     SEARCH_VAR,
     VALUES_VAR,
     AutocompleteView,
+    PopupResponseMixin,
 )
 from tests.testapp.models import Person
 
@@ -26,9 +31,25 @@ def csrf_cookie_view(request):
     return HttpResponse()
 
 
+class PersonCreateView(PopupResponseMixin, CreateView):
+    model = Person
+    fields = forms.ALL_FIELDS
+    template_name = "base.html"
+    success_url = "__SUCCESS_URL__"
+
+
+class PersonUpdateView(PopupResponseMixin, UpdateView):
+    model = Person
+    fields = forms.ALL_FIELDS
+    template_name = "base.html"
+    success_url = "__SUCCESS_URL__"
+
+
 urlpatterns = [
     path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
     path("csrf/", csrf_cookie_view, name="csrf"),
+    path("add/", PersonCreateView.as_view(), name="add_person"),
+    path("edit/<path:pk>", PersonUpdateView.as_view(), name="edit_person"),
 ]
 
 
@@ -383,8 +404,6 @@ class TestAutocompleteViewUnitTests:
         Assert that post returns a HttpResponseForbidden response when the user
         does not have permission to add objects.
         """
-        # request = post_request
-        # request.user = noperms_user
         assert isinstance(view.post(post_request(user=noperms_user)), HttpResponseForbidden)
 
     def test_post_no_create_field_data(self, view, setup_view, post_request):
@@ -394,3 +413,47 @@ class TestAutocompleteViewUnitTests:
         """
         with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
             assert isinstance(view.post(post_request(data={"create-field": "name"})), HttpResponseBadRequest)
+
+
+@pytest.mark.django_db
+@pytest.mark.urls(__name__)
+class TestPopupResponseMixin:
+    @pytest.mark.parametrize("action", ["add", "edit"])
+    def test_redirects_success_url_when_not_a_popup(self, action, client, random_person):
+        """
+        Assert that the view redirects to the success_url when the view is not
+        a popup.
+        """
+        if action == "add":
+            url = reverse("add_person")
+        else:
+            url = reverse("edit_person", args=[random_person.pk])
+        response = client.post(url, data={"full_name": "Bob Testman"})
+        assert response.status_code == 302
+        assert response.url == "__SUCCESS_URL__"
+
+    def test_change_popup_response(self, client, random_person):
+        """
+        Assert that the correct response is returned after submitting a change
+        popup.
+        """
+        response = client.post(
+            reverse("edit_person", args=[random_person.pk]), data={"full_name": "Bob Testman", IS_POPUP_VAR: "1"}
+        )
+        assert isinstance(response, TemplateResponse)
+        assert response.template_name == "mizdb_tomselect/popup_response.html"
+        popup_data = json.loads(response.context_data["popup_response_data"])
+        assert popup_data["value"] == str(random_person.pk)
+        assert popup_data["text"] == "Bob Testman"
+
+    def test_add_popup_response(self, client):
+        """
+        Assert that the correct response is returned after submitting an add
+        popup.
+        """
+        response = client.post(reverse("add_person"), data={"full_name": "Bob Testman", IS_POPUP_VAR: "1"})
+        assert isinstance(response, TemplateResponse)
+        assert response.template_name == "mizdb_tomselect/popup_response.html"
+        popup_data = json.loads(response.context_data["popup_response_data"])
+        assert popup_data["value"] == "1"
+        assert popup_data["text"] == "Bob Testman"

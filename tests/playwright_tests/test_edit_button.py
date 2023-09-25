@@ -1,11 +1,12 @@
+import re
+
 import pytest
 from django import forms
-from django.http import HttpResponse
 from django.urls import path, reverse
-from django.views.generic import FormView
+from django.views.generic import FormView, UpdateView
 from playwright.sync_api import expect
 
-from mizdb_tomselect.views import AutocompleteView
+from mizdb_tomselect.views import AutocompleteView, PopupResponseMixin
 from mizdb_tomselect.widgets import MIZSelectMultiple
 from tests.testapp.models import Person
 
@@ -25,6 +26,13 @@ class EditButtonForm(forms.Form):
     )
 
 
+class PersonUpdateView(PopupResponseMixin, UpdateView):
+    template_name = "base.html"
+    model = Person
+    fields = ["full_name"]
+    success_url = "__SUCCESS_URL__"  # success url is irrelevant for popups
+
+
 class InitialDataFormView(FormView):
     form_class = EditButtonForm
     template_name = "base.html"
@@ -37,9 +45,8 @@ urlpatterns = [
     path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
     path("edit_button/", FormView.as_view(form_class=EditButtonForm, template_name="base.html"), name="edit"),
     path("edit_button_initial/", InitialDataFormView.as_view(), name="edit_initial"),
-    path("edit/<path:object_id>/", lambda r, object_id: HttpResponse("This is a dummy edit page."), name="edit_page"),
+    path("edit/<path:pk>/", PersonUpdateView.as_view(), name="edit_page"),
 ]
-
 
 pytestmark = [pytest.mark.pw, pytest.mark.urls(__name__)]
 
@@ -56,6 +63,17 @@ def get_edit_buttons(item):
 def edit_buttons(selected):
     """Return the edit buttons of the selected items."""
     return get_edit_buttons(selected)
+
+
+@pytest.fixture
+def edit_first_item(context, selected):
+    """Open the change page of the first selected Person and rename them."""
+    with context.expect_page() as new_page_info:
+        get_edit_buttons(selected.first).click()
+    new_page = new_page_info.value
+    new_page.wait_for_load_state()
+    new_page.get_by_label(re.compile("full name", re.IGNORECASE)).fill("Bob Testman")
+    new_page.get_by_role("button").click()
 
 
 @pytest.mark.parametrize("view_name", ["edit"])
@@ -83,7 +101,7 @@ class TestEditButton:
     def test_edit_button_links_to_edit_page(self, edit_buttons, selected_values):
         """Assert that the edit button links to the edit page of the item."""
         for item, value in selected_values:
-            expect(get_edit_buttons(item)).to_have_attribute("href", reverse("edit_page", args=[value]))
+            expect(get_edit_buttons(item)).to_have_attribute("href", re.compile(reverse("edit_page", args=[value])))
 
     def test_edit_button_opens_popup(self, _page, edit_buttons):
         """Assert that the edit button opens the edit page in a popup."""
@@ -98,6 +116,13 @@ class TestEditButton:
         search_input.blur()  # close the dropdown
         edit_buttons.first.click()
         expect(dropdown).not_to_be_visible()
+
+    def test_edit_updates_selected_item(self, _page, selected, edit_first_item):
+        """
+        After successfully editing a related object, the selected item should be
+        updated.
+        """
+        expect(selected.first).to_have_text("Bob Testman")
 
 
 @pytest.mark.parametrize("view_name", ["edit_initial"])
@@ -115,4 +140,4 @@ class TestEditButtonInitial:
         their edit pages.
         """
         for item, value in selected_values:
-            expect(get_edit_buttons(item)).to_have_attribute("href", reverse("edit_page", args=[value]))
+            expect(get_edit_buttons(item)).to_have_attribute("href", re.compile(reverse("edit_page", args=[value])))

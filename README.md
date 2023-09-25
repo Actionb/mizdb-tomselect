@@ -8,24 +8,23 @@ Note that this was written specifically with the [MIZDB](https://github.com/Acti
 apply to your app.
 
 <!-- TOC -->
-
 * [TomSelect for Django (MIZDB)](#tomselect-for-django-mizdb)
-    * [Installation](#installation)
-    * [Usage](#usage)
-    * [Widgets](#widgets)
-        * [MIZSelect](#mizselect)
-        * [MIZSelectTabular](#mizselecttabular)
-            * [Adding more columns](#adding-more-columns)
-        * [MIZSelectMultiple & MIZSelectTabularMultiple](#mizselectmultiple--mizselecttabularmultiple)
-    * [Function & Features](#function--features)
-        * [Searching](#searching)
-        * [Option creation](#option-creation)
-            * [AJAX request](#ajax-request)
-        * [Changelist link](#changelist-link)
-        * [Inline edit link](#inline-edit-link)
-        * [Filter against values of another field](#filter-against-values-of-another-field)
-    * [Development & Demo](#development--demo)
-
+  * [Installation](#installation)
+  * [Usage](#usage)
+  * [Widgets](#widgets)
+    * [MIZSelect](#mizselect)
+    * [MIZSelectTabular](#mizselecttabular)
+      * [Adding more columns](#adding-more-columns)
+    * [MIZSelectMultiple & MIZSelectTabularMultiple](#mizselectmultiple--mizselecttabularmultiple)
+  * [Function & Features](#function--features)
+    * [Searching](#searching)
+    * [Option creation](#option-creation)
+      * [AJAX request](#ajax-request)
+    * [Changelist link](#changelist-link)
+    * [Inline edit link](#inline-edit-link)
+    * [Filter against values of another field](#filter-against-values-of-another-field)
+    * [Add & Edit popup response](#add--edit-popup-response)
+  * [Development & Demo](#development--demo)
 <!-- TOC -->
 
 ----
@@ -237,7 +236,7 @@ bottom of the dropdown.
 urlpatterns = [
     ...
     path('autocomplete/', AutocompleteView.as_view(), name='my_autocomplete_view'),
-    path('city/add/', CityAddView.as_view(), name='city_add'),
+    path('city/add/', CityCreateView.as_view(), name='city_add'),
 ]
 
 # forms.py
@@ -245,6 +244,8 @@ widget = MIZSelect(City, url='my_autocomplete_view', add_url='city_add')
 ```
 
 Clicking on that button sends the user to the add page of the model.
+
+> NOTE: Also see [Add & Edit popup response](#add--edit-popup-response)
 
 #### AJAX request
 
@@ -297,6 +298,8 @@ widget = MIZSelect(Person, edit_url='person_change')
 
 ![Preview of the edit button](https://raw.githubusercontent.com/Actionb/mizdb-tomselect/main/demo/images/edit2.png "Edit button preview")
 
+> NOTE: Also see [Add & Edit popup response](#add--edit-popup-response)
+
 ### Filter against values of another field
 
 Use the `filter_by` argument to restrict the available options to the value of
@@ -333,6 +336,40 @@ This will result in the Person result queryset to be filtered against
 NOTE: When using `filter_by`, the declaring element now **requires** that the other field
 provides a value. If the other field does not have a value, the search will not
 return any results.
+
+### Add & Edit popup response
+
+After adding new objects with the 'add' button or after editing selected objects with the
+'edit' button, the options of the 'parent' form will still need to be updated.
+This can be done by using the `PopupResponseMixin` view mixin with your CreateViews and UpdateViews.
+
+```python
+from mizdb_tomselect.views import PopupResponseMixin
+
+class CityCreateView(PopupResponseMixin, CreateView):
+    ...
+
+
+class PersonChangeView(PopupResponseMixin, UpdateView):
+    ...
+```
+
+You also need to modify the template for the Create-/UpdateView by adding a hidden field to the form:
+```html
+<form>
+...
+{% if is_popup %}
+    <input type="hidden" name="{{ is_popup_var }}" value="1">
+{% endif %}
+...
+</form>
+```
+
+With all this in place, tabs opened from (left-)clicking an add or edit button will be
+treated as a popup. When submitting a popup form, the view redirects to a popup response
+template. That template loads some javascript that updates the form of the opener window
+that created the popup. The popup window or tab is then closed.  
+This is, roughly, a slimmed down version of how django admin handles popups for related objects.
 
 ----
 
