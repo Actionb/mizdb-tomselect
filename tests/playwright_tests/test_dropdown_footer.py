@@ -138,20 +138,10 @@ def add_new_object(context, _page, add_button):
     new_page.get_by_role("button").click()
 
 
-@pytest.mark.parametrize(
-    "view_name,has_footer", [("add", True), ("create", True), ("changelist", True), ("no_footer", False)]
-)
-def test_has_footer(view_name, has_footer, dropdown_footer, context):
-    """
-    Assert that a footer div is added to the dropdown content if the select
-    element declares a 'changelist' URL or a 'add' URL.
-    """
-    if has_footer:
-        # Note that the footer will be attached for an 'add' URL even if the
-        # user has no 'add' permission.
-        expect(dropdown_footer).to_be_attached()
-    else:
-        expect(dropdown_footer).not_to_be_attached()
+@pytest.mark.parametrize("view_name", ["add", "create", "changelist", "no_footer"])
+def test_has_footer(view_name, dropdown_footer):
+    """Assert that a footer div is added to the dropdown content."""
+    expect(dropdown_footer).to_be_attached()
 
 
 @pytest.mark.parametrize("view_name", ["add", "create"])
