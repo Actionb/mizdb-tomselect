@@ -346,7 +346,7 @@ function init (elem) {
 document.addEventListener('DOMContentLoaded', (event) => {
   // Do not initialize elements which contain '__prefix__'; those are part of
   // empty form templates for django formsets:
-  const selector = '[is-tomselect]:not([id*="__prefix__"]'
+  const selector = '[is-tomselect]:not([id*="__prefix__"])'
   document.querySelectorAll(selector).forEach(init)
 
   new window.MutationObserver(mutations => {
