@@ -10,19 +10,23 @@ import no_backspace_delete from 'tom-select/src/plugins/no_backspace_delete/plug
 import edit_button from './plugins/edit_button'
 import dropdown_footer from './plugins/dropdown_footer'
 import add_button from './plugins/add_button'
+import changelist_button from './plugins/changelist_button'
 /* eslint-enable camelcase */
 
 import merge from 'lodash/merge'
 
+// TomSelect plugins
 TomSelect.define('clear_button', clear_button)
 TomSelect.define('dropdown_header', dropdown_header)
 TomSelect.define('dropdown_input', dropdown_input)
 TomSelect.define('remove_button', remove_button)
 TomSelect.define('virtual_scroll', virtual_scroll)
 TomSelect.define('no_backspace_delete', no_backspace_delete)
+// mizselect-tomselect plugins
 TomSelect.define('edit_button', edit_button)
 TomSelect.define('dropdown_footer', dropdown_footer)
 TomSelect.define('add_button', add_button)
+TomSelect.define('changelist_button', changelist_button)
 
 /**
  * Extract the form prefix from the name of the given element.
@@ -133,6 +137,10 @@ function getPlugins (elem) {
     plugins.add_button = { addUrl: elem.dataset.addUrl }
   }
 
+  if (elem.dataset.changelistUrl) {
+    plugins.changelist_button = { changelistUrl: elem.dataset.changelistUrl }
+  }
+
   if (elem.hasAttribute('can-remove')) {
     plugins.remove_button = { title: 'Entfernen', label: removeImage }
   }
@@ -193,31 +201,6 @@ function getRenderTemplates (elem) {
   return templates
 }
 
-function attachFooter (ts, elem) {
-  const changelistURL = elem.dataset.changelistUrl
-  const footer = ts.dropdown_footer
-
-  if (changelistURL) {
-    const changelistLink = document.createElement('a')
-    changelistLink.classList.add('btn', 'btn-info', 'ms-auto', 'cl-btn')
-    changelistLink.href = changelistURL
-    changelistLink.target = '_blank'
-    changelistLink.innerHTML = 'Änderungsliste'
-    footer.appendChild(changelistLink)
-    ts.on('type', (query) => {
-      // TODO: include value of filterBy in query
-      if (query) {
-        // Update the URL to the changelist to include the query.
-        const queryString = new URLSearchParams({ q: query }).toString()
-        changelistLink.href = `${changelistURL}?${queryString}`
-      } else {
-        changelistLink.href = changelistURL
-      }
-    })
-    ts.on('blur', () => { changelistLink.href = changelistURL })
-  }
-}
-
 function init (elem) {
   if (elem.tomselect) {
     // Already initialized
@@ -237,8 +220,6 @@ function init (elem) {
   const initEvent = new Event('initMIZSelect', { bubbles: true })
   elem.dispatchEvent(initEvent)
   const ts = elem.tomselect ? elem.tomselect : elem.initMIZSelect()
-
-  attachFooter(ts, elem)
 
   // Open the dropdown instead of marking an item when clicking on a multi
   // select item.
