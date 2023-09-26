@@ -112,6 +112,12 @@ def dropdown(_page):
 
 
 @pytest.fixture
+def dropdown_footer(_page, wrapper_click):
+    """Return the dropdown footer."""
+    return _page.locator(".dropdown-footer")
+
+
+@pytest.fixture
 def dropdown_items(_page):
     """Return all elements in the dropdown content."""
     return _page.locator(".ts-dropdown-content > *")

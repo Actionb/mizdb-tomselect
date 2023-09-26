@@ -3,8 +3,7 @@ from urllib.parse import urlparse
 
 import pytest
 from django import forms
-from django.http import HttpResponse
-from django.urls import path, reverse
+from django.urls import path
 from django.views.generic import CreateView, FormView
 from playwright.sync_api import expect
 
@@ -44,32 +43,6 @@ class AddCreateForm(forms.Form):
     )
 
 
-class ChangelistForm(forms.Form):
-    """Test form with a widget that adds a 'changelist' button."""
-
-    field = forms.ModelChoiceField(
-        Person.objects.all(),
-        widget=MIZSelect(
-            model=Person,
-            url="autocomplete",
-            changelist_url="changelist_page",
-            search_lookup="full_name__icontains",
-            label_field="full_name",
-        ),
-    )
-
-
-class NoFooterForm(forms.Form):
-    """Test form with a field that has no dropdown footer."""
-
-    field = forms.ModelChoiceField(
-        Person.objects.all(),
-        widget=MIZSelect(
-            model=Person, url="autocomplete", search_lookup="full_name__icontains", label_field="full_name"
-        ),
-    )
-
-
 class PersonCreateView(PopupResponseMixin, CreateView):
     template_name = "base.html"
     model = Person
@@ -81,33 +54,16 @@ urlpatterns = [
     path("autocomplete/", AutocompleteView.as_view(), name="autocomplete"),
     path("add_button/", FormView.as_view(form_class=AddForm, template_name="base.html"), name="add"),
     path("create_button/", FormView.as_view(form_class=AddCreateForm, template_name="base.html"), name="create"),
-    path(
-        "changelist_button/", FormView.as_view(form_class=ChangelistForm, template_name="base.html"), name="changelist"
-    ),
-    path("no_footer/", FormView.as_view(form_class=NoFooterForm, template_name="base.html"), name="no_footer"),
     path("add/", PersonCreateView.as_view(), name="add_page"),
-    path("changelist/", lambda r: HttpResponse("This is a dummy changelist page."), name="changelist_page"),
 ]
 
 pytestmark = [pytest.mark.pw, pytest.mark.urls(__name__)]
 
 
 @pytest.fixture
-def dropdown_footer(_page, wrapper_click):
-    """Return the dropdown footer."""
-    return _page.locator(".dropdown-footer")
-
-
-@pytest.fixture
 def add_button(dropdown_footer):
     """Return the 'add' button in the dropdown footer."""
     return dropdown_footer.locator(".mizselect-add-btn")
-
-
-@pytest.fixture
-def changelist_button(dropdown_footer):
-    """Return the changelist button in the dropdown footer."""
-    return dropdown_footer.locator(".cl-btn")
 
 
 @pytest.fixture
@@ -136,12 +92,6 @@ def add_new_object(context, _page, add_button):
     new_page.wait_for_load_state()
     new_page.get_by_label(re.compile("full name", re.IGNORECASE)).fill("Bob Testman")
     new_page.get_by_role("button").click()
-
-
-@pytest.mark.parametrize("view_name", ["add", "create", "changelist", "no_footer"])
-def test_has_footer(view_name, dropdown_footer):
-    """Assert that a footer div is added to the dropdown content."""
-    expect(dropdown_footer).to_be_attached()
 
 
 @pytest.mark.parametrize("view_name", ["add", "create"])
@@ -273,20 +223,3 @@ class TestCreateButtonClick:
         should be immediately selected.
         """
         expect(_page.locator(".ts-control .item")).to_have_text("Bob Testman")
-
-
-@pytest.mark.parametrize("view_name", ["changelist"])
-class TestChangelistButton:
-    def test_has_visible_changelist_button(self, changelist_button):
-        """Assert that the dropdown footer contains a visible 'changelist' button."""
-        expect(changelist_button).to_be_visible()
-
-    def test_changelist_query_string_contains_search_term(self, _page, changelist_button, search_input):
-        """
-        Assert that the URL to the changelist contains the current search term
-        in the query string.
-        """
-        assert changelist_button.get_attribute("href") == reverse("changelist_page")
-        with _page.expect_request_finished():
-            search_input.fill("2022")
-        assert "q=2022" in changelist_button.get_attribute("href")
