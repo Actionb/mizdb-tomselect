@@ -9,13 +9,15 @@ class Person(models.Model):
     city = models.ForeignKey("City", on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.name
 
     def save(self, *args, **kwargs):
         if not self.name:
             self.name = f"{self.first_name} {self.last_name}"
         elif " " in self.name:
             self.first_name, self.last_name = self.name.rsplit(" ", 1)
+        else:
+            self.last_name = self.name
         super().save(*args, **kwargs)
 
     name_field = "name"
