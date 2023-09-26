@@ -10,6 +10,8 @@ import no_backspace_delete from 'tom-select/src/plugins/no_backspace_delete/plug
 import edit_button from './plugins/edit_button'
 /* eslint-enable camelcase */
 
+import merge from 'lodash/merge'
+
 TomSelect.define('clear_button', clear_button)
 TomSelect.define('dropdown_header', dropdown_header)
 TomSelect.define('dropdown_input', dropdown_input)
@@ -301,7 +303,21 @@ function init (elem) {
     // Already initialized
     return
   }
-  const ts = new TomSelect(elem, getSettings(elem))
+
+  // Attach the init function to the element so it can be called in a custom
+  // handler for the init event.
+  elem.initMIZSelect = (userSettings) => {
+    if (elem.tomselect) {
+      // Already initialized
+      return elem.tomselect
+    }
+    const settings = merge(getSettings(elem), userSettings)
+    return new TomSelect(elem, settings)
+  }
+  const initEvent = new Event('initMIZSelect', { bubbles: true })
+  elem.dispatchEvent(initEvent)
+  const ts = elem.tomselect ? elem.tomselect : elem.initMIZSelect()
+
   attachFooter(ts, elem)
 
   // Open the dropdown instead of marking an item when clicking on a multi

@@ -3,6 +3,7 @@
 ## [unreleased]
 
 - added popup response that updates the form when modifying related objects via the add and edit buttons
+- add init event to enable overwriting TomSelect parameters
 
 ## 0.7.1 (2023-09-19)
 

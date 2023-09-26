@@ -24,6 +24,7 @@ apply to your app.
     * [Inline edit link](#inline-edit-link)
     * [Filter against values of another field](#filter-against-values-of-another-field)
     * [Add & Edit popup response](#add--edit-popup-response)
+    * [Overwrite settings](#overwrite-settings)
   * [Development & Demo](#development--demo)
 <!-- TOC -->
 
@@ -370,6 +371,23 @@ treated as a popup. When submitting a popup form, the view redirects to a popup 
 template. That template loads some javascript that updates the form of the opener window
 that created the popup. The popup window or tab is then closed.  
 This is, roughly, a slimmed down version of how django admin handles popups for related objects.
+
+### Overwrite settings
+
+To change MIZSelect or [TomSelect settings](https://tom-select.js.org/docs/), you can add a handler for the `initMIZSelect` event.
+The event is dispatched before the TomSelect constructor is called. 
+The target of the event is the element that is about to be initialized.
+You can pass your own settings to the init function `initMIZSelect` that is attached to the target element.
+For example, to overwrite the title of the remove buttons:
+```javascript
+window.addEventListener('initMIZSelect', (e) => {
+  const elem = e.target
+  const mySettings = { plugins: { remove_button: { title: 'Remove This' } } }
+  elem.initMIZSelect(mySettings)
+})
+```
+The settings will be merged with the default MIZSelect settings, and the TomSelect constructor
+will be called with the merged settings.
 
 ----
 

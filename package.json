@@ -9,5 +9,8 @@
   "scripts": {
     "build": "esbuild client/mizselect.js --bundle --outfile=src/mizdb_tomselect/static/mizdb_tomselect/js/mizselect.js",
     "lint": "npx standard client/"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }
