@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- add plugins for dropdown_footer, add_button and changelist_button
+
 ## 0.8.0 (2023-09-26)
 
 - added popup response that updates the form when modifying related objects via the add and edit buttons
