@@ -9,6 +9,7 @@ import virtual_scroll from 'tom-select/src/plugins/virtual_scroll/plugin'
 import no_backspace_delete from 'tom-select/src/plugins/no_backspace_delete/plugin'
 import edit_button from './plugins/edit_button'
 import dropdown_footer from './plugins/dropdown_footer'
+import add_button from './plugins/add_button'
 /* eslint-enable camelcase */
 
 import merge from 'lodash/merge'
@@ -21,6 +22,7 @@ TomSelect.define('virtual_scroll', virtual_scroll)
 TomSelect.define('no_backspace_delete', no_backspace_delete)
 TomSelect.define('edit_button', edit_button)
 TomSelect.define('dropdown_footer', dropdown_footer)
+TomSelect.define('add_button', add_button)
 
 /**
  * Extract the form prefix from the name of the given element.
@@ -127,6 +129,10 @@ function getPlugins (elem) {
     dropdown_footer: null
   }
 
+  if (elem.dataset.addUrl) {
+    plugins.add_button = { addUrl: elem.dataset.addUrl }
+  }
+
   if (elem.hasAttribute('can-remove')) {
     plugins.remove_button = { title: 'Entfernen', label: removeImage }
   }
@@ -189,91 +195,7 @@ function getRenderTemplates (elem) {
 
 function attachFooter (ts, elem) {
   const changelistURL = elem.dataset.changelistUrl
-  const addURL = elem.dataset.addUrl
   const footer = ts.dropdown_footer
-
-  if (addURL) {
-    // A helper function that first adds a new option with the given value and
-    // text, and then selects that new option.
-    function addAndSelectNewOption (value, text) {
-      const data = {}
-      data[ts.settings.valueField] = value
-      data[ts.settings.labelField] = text
-      ts.addOption(data, true)
-      ts.setCaret(ts.caretPos)
-      ts.addItem(value)
-    }
-    const addBtn = document.createElement('a')
-    addBtn.classList.add('btn', 'btn-success', 'mizselect-add-btn', 'd-none')
-
-    const url = new URL(addURL, window.location.href)
-    url.searchParams.set('_popup', '1')
-    addBtn.href = url
-
-    addBtn.id = `id_add_button_${elem.id}`
-    addBtn.target = '_blank'
-    addBtn.innerHTML = 'Hinzufügen'
-    footer.appendChild(addBtn)
-
-    // After loading new options, check if the button should be shown.
-    ts.on('load', () => {
-      if (ts.settings.showCreateOption) {
-        addBtn.classList.remove('d-none')
-      } else {
-        addBtn.classList.add('d-none')
-      }
-    })
-
-    // Update the add button text when the user is typing.
-    ts.on('type', (query) => {
-      if (query) {
-        addBtn.innerHTML = `'${query}' hinzufügen...`
-      } else {
-        addBtn.innerHTML = 'Hinzufügen'
-      }
-    })
-    // Reset the add button text when the dropdown is closed.
-    ts.on('blur', () => { addBtn.innerHTML = 'Hinzufügen' })
-
-    // Handle clicking the button.
-    const createField = elem.dataset.createField
-    addBtn.addEventListener('click', (e) => {
-      e.preventDefault()
-      // If given a create field, try adding new model objects via AJAX request.
-      if (ts.lastValue && createField) {
-        const form = new FormData()
-        form.append('create-field', createField)
-        form.append(createField, ts.lastValue)
-        form.append('model', elem.dataset.model)
-        const options = {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: form
-        }
-        fetch(elem.dataset.autocompleteUrl, options)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('POST request failed.')
-            }
-            return response.json()
-          }).then(json => {
-            addAndSelectNewOption(json.pk, json.text)
-          }).catch((error) => console.log(error))
-      } else {
-        // No search term or no createField set: just open the add page.
-        const popup = window.open(addBtn.href, addBtn.id)
-        popup.focus()
-      }
-    })
-
-    // Handle the creation of a new object from a popup. Add the object to the
-    // available options and select it.
-    addBtn.addEventListener('popupDismissed', (e) => {
-      addAndSelectNewOption(e.detail.data.value, e.detail.data.text)
-    })
-  }
 
   if (changelistURL) {
     const changelistLink = document.createElement('a')

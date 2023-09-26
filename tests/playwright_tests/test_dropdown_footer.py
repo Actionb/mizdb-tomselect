@@ -180,10 +180,10 @@ class TestAddButton:
         expect(add_button).to_have_text("Hinzufügen")
         with _page.expect_request_finished():
             search_input.fill("202")
-        expect(add_button).to_have_text("'202' hinzufügen...")
+        expect(add_button).to_have_text("Hinzufügen: '202'")
         with _page.expect_request_finished():
             search_input.fill("2022")
-        expect(add_button).to_have_text("'2022' hinzufügen...")
+        expect(add_button).to_have_text("Hinzufügen: '2022'")
 
 
 @pytest.mark.parametrize("view_name", ["add"])
