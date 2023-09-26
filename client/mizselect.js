@@ -129,8 +129,7 @@ function getPlugins (elem) {
     dropdown_input: null,
     virtual_scroll: null,
     edit_button: { editUrl: elem.dataset.editUrl },
-    no_backspace_delete: null,
-    dropdown_footer: null
+    no_backspace_delete: null
   }
 
   if (elem.dataset.addUrl) {
