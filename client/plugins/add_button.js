@@ -25,7 +25,7 @@ export default function (userOptions) {
   const options = Object.assign({
     addUrl: '',
     className: 'btn btn-success mizselect-add-btn d-none',
-    label: 'Hinzufügen'
+    label: 'Add'
   }, userOptions)
 
   if (!options.addUrl) return

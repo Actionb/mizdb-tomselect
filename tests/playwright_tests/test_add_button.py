@@ -127,13 +127,13 @@ class TestAddButton:
         Assert that the text of the 'add' button updates along with the user
         typing in a search term.
         """
-        expect(add_button).to_have_text("Hinzufügen")
+        expect(add_button).to_have_text("Add")
         with _page.expect_request_finished():
             search_input.fill("202")
-        expect(add_button).to_have_text("Hinzufügen: '202'")
+        expect(add_button).to_have_text("Add: '202'")
         with _page.expect_request_finished():
             search_input.fill("2022")
-        expect(add_button).to_have_text("Hinzufügen: '2022'")
+        expect(add_button).to_have_text("Add: '2022'")
 
 
 @pytest.mark.parametrize("view_name", ["add"])

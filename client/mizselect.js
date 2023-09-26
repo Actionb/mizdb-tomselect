@@ -141,11 +141,11 @@ function getPlugins (elem) {
   }
 
   if (elem.hasAttribute('can-remove')) {
-    plugins.remove_button = { title: 'Entfernen', label: removeImage }
+    plugins.remove_button = { label: removeImage }
   }
 
   if (elem.hasAttribute('is-multiple')) {
-    plugins.clear_button = { title: 'Auswahl aufheben' }
+    plugins.clear_button = null
   }
 
   if (elem.hasAttribute('is-tabular')) {
@@ -171,17 +171,8 @@ function getPlugins (elem) {
 
 function getRenderTemplates (elem) {
   const templates = {
-    no_results: function (data, escape) {
-      return '<div class="no-results">Keine Ergebnisse</div>'
-    },
-    option_create: function (data, escape) {
-      return '<div class="create bg-secondary text-bg-secondary">Hinzufügen <strong>' + escape(data.input) + '</strong>&hellip;</div>'
-    },
     loading_more: function (data, escape) {
-      return '<div class="loading-more-results py-2 d-flex align-items-center"><div class="spinner"></div> Lade mehr Ergebnisse </div>'
-    },
-    no_more_results: function (data, escape) {
-      return '<div class="no-more-results">Keine weiteren Ergebnisse</div>'
+      return '<div class="loading-more-results py-2 d-flex align-items-center"><div class="spinner"></div> Loading more results </div>'
     },
     item: function (data, escape) {
       return '<div><span>' + escape(data[this.settings.labelField]) + '</span></div>'

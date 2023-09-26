@@ -66,7 +66,7 @@ class TestMIZSelect:
         with _page.expect_request_finished():
             last_dropdown_item.scroll_into_view_if_needed()
         expect(selectable_options).to_have_count(len(test_data))
-        expect(last_dropdown_item).to_have_text("Keine weiteren Ergebnisse")
+        expect(last_dropdown_item).to_have_text("No more results")
 
     @pytest.mark.parametrize("select_count", [1])
     def test_selected_item_has_remove_button(self, select_options, selected, remove_button, select_count):

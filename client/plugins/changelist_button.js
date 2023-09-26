@@ -14,7 +14,7 @@ export default function (userOptions) {
   const options = Object.assign({
     changelistUrl: '',
     className: 'btn btn-info ms-auto cl-btn',
-    label: 'Änderungsliste'
+    label: 'Changelist'
   }, userOptions)
 
   if (!options.changelistUrl) return
