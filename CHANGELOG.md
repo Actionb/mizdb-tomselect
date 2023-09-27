@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.1 (2023-09-27)
+
+- fix `popup_response.html` template not being included in the python package
+
 ## 0.9.0 (2023-09-27)
 
 - add plugins for dropdown_footer, add_button and changelist_button

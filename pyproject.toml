@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mizdb-tomselect"
-version = "0.9.0"
+version = "0.9.1"
 authors = [
   { name="Philip Becker", email="yummytea1@gmail.com" },
 ]
@@ -29,7 +29,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.js", "*.css", "*.css.map"]
+"*" = ["*.js", "*.css", "*.css.map", "*.html"]
 
 [tool.coverage.run]
 branch = true
