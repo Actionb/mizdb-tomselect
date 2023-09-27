@@ -22,38 +22,117 @@ TomSelect.define('dropdown_input', dropdown_input)
 TomSelect.define('remove_button', remove_button)
 TomSelect.define('virtual_scroll', virtual_scroll)
 TomSelect.define('no_backspace_delete', no_backspace_delete)
-// mizselect-tomselect plugins
+// mizdb-tomselect plugins
 TomSelect.define('edit_button', edit_button)
 TomSelect.define('dropdown_footer', dropdown_footer)
 TomSelect.define('add_button', add_button)
 TomSelect.define('changelist_button', changelist_button)
 
+document.addEventListener('DOMContentLoaded', (event) => {
+  // Do not initialize elements which contain '__prefix__'; those are part of
+  // empty form templates for django formsets:
+  const selector = '[is-tomselect]:not([id*="__prefix__"])'
+  document.querySelectorAll(selector).forEach(init)
+
+  new window.MutationObserver(mutations => {
+    mutations.forEach(mutation =>
+      mutation.addedNodes.forEach(node => {
+        if (!(node instanceof window.HTMLElement)) return
+        node.querySelectorAll(selector).forEach(elem => init(elem))
+        if (node.matches(selector)) init(node)
+      })
+    )
+  }).observe(document.documentElement, { childList: true, subtree: true })
+})
+
 /**
- * Extract the form prefix from the name of the given element.
+ * Create a TomSelect from the given element.
+ *
+ * @param {HTMLElement} elem the HTML element to turn into a TomSelect
  */
-function getFormPrefix (elem) {
-  const parts = elem.getAttribute('name').split('-').slice(0, -1)
-  if (parts.length) {
-    return parts.join('-') + '-'
+function init (elem) {
+  if (elem.tomselect) {
+    // Already initialized
+    return
   }
-  return ''
+
+  // Attach the init function to the element so it can be called in a custom
+  // handler for the init event.
+  elem.initMIZSelect = (userSettings) => {
+    if (elem.tomselect) {
+      // Already initialized
+      return elem.tomselect
+    }
+    const settings = merge(getSettings(elem), userSettings)
+    return new TomSelect(elem, settings)
+  }
+  const initEvent = new Event('initMIZSelect', { bubbles: true })
+  elem.dispatchEvent(initEvent)
+  const ts = elem.tomselect ? elem.tomselect : elem.initMIZSelect()
+
+  // Open the dropdown instead of marking an item when clicking on a multi
+  // select item.
+  ts.hook('instead', 'onItemSelect', (evt, item) => false)
+
+  // Reload the default/initial options when the input is cleared:
+  ts.on('type', (query) => {
+    if (!query) {
+      ts.load('')
+      ts.refreshOptions()
+    }
+  })
+
+  if (elem.filterByElem) {
+    // Force re-fetching the options when the value of the filterBy element
+    // changes.
+    elem.filterByElem.addEventListener('change', () => {
+      // Reset the pagination (query:url) mapping of the virtual_scroll
+      // plugin. This is necessary because the filter value is not part of
+      // the query string, which means that the mapping might return an URL
+      // that is incorrect for the current filter.
+      ts.getUrl(null)
+      // Clear all options, but leave the selected items.
+      ts.clearOptions()
+      // Remove the flag that this element has already been loaded.
+      ts.wrapper.classList.remove('preloaded')
+    })
+  }
+
+  // When necessary, scroll the dropdown into view when opening it.
+  ts.on('dropdown_open', (dropdown) => {
+    const rect = dropdown.getBoundingClientRect()
+    // The dropdown may not have reached its full height (still loading options)
+    // yet, so using rect.bottom now may give a value that is too low.
+    // Instead, calculate the bottom position from the top plus a fixed amount.
+    // If the bottom end of the dropdown is outside the windows interior height,
+    // scroll the dropdown into the center of the view.
+    if (rect.top + 400 > window.innerHeight) dropdown.scrollIntoView({ block: 'center' })
+  })
 }
 
 /**
- * Walk through the given (form) prefixes and return the first element
- * matching prefix + name.
- **/
-function getElementByPrefixedName (name, prefixes) {
-  const _prefixes = prefixes || []
-  _prefixes.push('')
-  for (let i = 0; i < _prefixes.length; i++) {
-    const element = document.querySelector(`[name=${prefixes[i] + name}]`)
-    if (element) {
-      return element
-    }
-  }
+ * A global function that handles closing popups opened by 'add' and 'edit'
+ * buttons. This function is called directly by script in the popup response,
+ * and it dispatches the `popupDismissed` event for the button that opened the
+ * popup. An event handler can then be used to update the form with the changes
+ * made in the popup.
+ *
+ * @param popup the popup window to dismiss
+ * @param data the updated data of the object that was modified by the popup
+ */
+window.dismissPopup = (popup, data) => {
+  const dismissEvent = new window.CustomEvent('popupDismissed', { detail: { data } })
+  const btn = document.getElementById(popup.name)
+  btn.dispatchEvent(dismissEvent)
+  popup.close()
 }
 
+/**
+ * Return the settings for the TomSelect constructor for the given element.
+ *
+ * @param {HTMLElement} elem the HTML element to turn into a TomSelect
+ * @returns an object of settings
+ */
 function getSettings (elem) {
   function buildUrl (query, page) {
     // Get the fields to select with queryset.values()
@@ -123,6 +202,12 @@ function getSettings (elem) {
   }
 }
 
+/**
+ * Return the TomSelect plugin settings to use for the given element.
+ *
+ * @param {HTMLElement} elem the HTML element to turn into a TomSelect
+ * @returns an object of plugin settings
+ */
 function getPlugins (elem) {
   const removeImage = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x text-danger"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
   const plugins = {
@@ -169,6 +254,12 @@ function getPlugins (elem) {
   return plugins
 }
 
+/**
+ * Return the TomSelect templates to use for the given element.
+ *
+ * @param {HTMLElement} elem the HTML element to turn into a TomSelect
+ * @returns an object of template declarations
+ */
 function getRenderTemplates (elem) {
   const templates = {
     loading_more: function (data, escape) {
@@ -191,85 +282,35 @@ function getRenderTemplates (elem) {
   return templates
 }
 
-function init (elem) {
-  if (elem.tomselect) {
-    // Already initialized
-    return
+/**
+ * Extract the form prefix from the name of the given element.
+ *
+ * @param elem a HTML element belonging to django form
+ * @returns the form prefix of the django form
+ */
+function getFormPrefix (elem) {
+  const parts = elem.getAttribute('name').split('-').slice(0, -1)
+  if (parts.length) {
+    return parts.join('-') + '-'
   }
-
-  // Attach the init function to the element so it can be called in a custom
-  // handler for the init event.
-  elem.initMIZSelect = (userSettings) => {
-    if (elem.tomselect) {
-      // Already initialized
-      return elem.tomselect
-    }
-    const settings = merge(getSettings(elem), userSettings)
-    return new TomSelect(elem, settings)
-  }
-  const initEvent = new Event('initMIZSelect', { bubbles: true })
-  elem.dispatchEvent(initEvent)
-  const ts = elem.tomselect ? elem.tomselect : elem.initMIZSelect()
-
-  // Open the dropdown instead of marking an item when clicking on a multi
-  // select item.
-  ts.hook('instead', 'onItemSelect', (evt, item) => false)
-
-  // Reload the default/initial options when the input is cleared:
-  ts.on('type', (query) => {
-    if (!query) {
-      ts.load('')
-      ts.refreshOptions()
-    }
-  })
-  if (elem.filterByElem) {
-    // Force re-fetching the options when the value of the filterBy element
-    // changes.
-    elem.filterByElem.addEventListener('change', () => {
-      // Reset the pagination (query:url) mapping of the virtual_scroll
-      // plugin. This is necessary because the filter value is not part of
-      // the query string, which means that the mapping might return an URL
-      // that is incorrect for the current filter.
-      ts.getUrl(null)
-      // Clear all options, but leave the selected items.
-      ts.clearOptions()
-      // Remove the flag that this element has already been loaded.
-      ts.wrapper.classList.remove('preloaded')
-    })
-  }
-
-  // When necessary, scroll the dropdown into view when opening it.
-  ts.on('dropdown_open', (dropdown) => {
-    const rect = dropdown.getBoundingClientRect()
-    // The dropdown may not have reached its full height (still loading options)
-    // yet, so using rect.bottom now may give a value that is too low.
-    // Instead, calculate the bottom position from the top plus a fixed amount.
-    // If the bottom end of the dropdown is outside the windows interior height,
-    // scroll the dropdown into the center of the view.
-    if (rect.top + 400 > window.innerHeight) dropdown.scrollIntoView({ block: 'center' })
-  })
+  return ''
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  // Do not initialize elements which contain '__prefix__'; those are part of
-  // empty form templates for django formsets:
-  const selector = '[is-tomselect]:not([id*="__prefix__"])'
-  document.querySelectorAll(selector).forEach(init)
-
-  new window.MutationObserver(mutations => {
-    mutations.forEach(mutation =>
-      mutation.addedNodes.forEach(node => {
-        if (!(node instanceof window.HTMLElement)) return
-        node.querySelectorAll(selector).forEach(elem => init(elem))
-        if (node.matches(selector)) init(node)
-      })
-    )
-  }).observe(document.documentElement, { childList: true, subtree: true })
-})
-
-window.dismissPopup = (popup, data) => {
-  const dismissEvent = new window.CustomEvent('popupDismissed', { detail: { data } })
-  const btn = document.getElementById(popup.name)
-  btn.dispatchEvent(dismissEvent)
-  popup.close()
+/**
+ * Walk through the given (form) prefixes and return the first element
+ * matching prefix + name.
+ *
+ * @param {string} name the name of a form element
+ * @param {string[]} prefixes an array of form prefixes
+ * @returns a form element with name that matches a prefix and the given name
+ */
+function getElementByPrefixedName (name, prefixes) {
+  const _prefixes = prefixes || []
+  _prefixes.push('')
+  for (let i = 0; i < _prefixes.length; i++) {
+    const element = document.querySelector(`[name=${prefixes[i] + name}]`)
+    if (element) {
+      return element
+    }
+  }
 }
