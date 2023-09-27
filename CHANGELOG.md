@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## 0.9.0 (2023-09-27)
 
 - add plugins for dropdown_footer, add_button and changelist_button
 
