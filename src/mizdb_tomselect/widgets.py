@@ -132,6 +132,22 @@ class MIZSelect(forms.Select):
         )
         return attrs
 
+    def use_required_attribute(self, initial):
+        # HTML5 select elements with the required attribute must have a
+        # placeholder label option, which can only be the first option which
+        # must have the value of an empty string.
+        # https://www.w3.org/TR/2011/WD-html5-author-20110809/the-select-element.html
+        # https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/required
+        # But if an initial value is provided, the select options will not
+        # include such an empty option - only an option for that initial value.
+        # So if the widget has an initial value, the required attribute cannot
+        # be used (at least not according to the specs).
+        # NOTE: The super method Select.use_required_attribute checks whether
+        #  the first option has a value by probing the widget's queryset. This
+        #  check creates a database cursor for every widget instance, which
+        #  slows down page loading considerably.
+        return not self.is_hidden and not initial
+
     class Media:
         css = {
             "all": ["vendor/tom-select/css/tom-select.bootstrap5.css", "mizdb_tomselect/css/mizselect.css"],
