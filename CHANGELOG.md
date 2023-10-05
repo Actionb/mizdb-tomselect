@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- observe changes to the `disabled` attribute of "tomselected" elements and disable/enable the TomSelect instance of that element accordingly
+
 ## 0.9.1 (2023-09-27)
 
 - fix `popup_response.html` template not being included in the python package

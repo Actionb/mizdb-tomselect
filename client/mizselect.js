@@ -32,7 +32,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
   // Do not initialize elements which contain '__prefix__'; those are part of
   // empty form templates for django formsets:
   const selector = '[is-tomselect]:not([id*="__prefix__"])'
-  document.querySelectorAll(selector).forEach(init)
+  document.querySelectorAll(selector).forEach(elem => {
+    init(elem)
+
+    // Disable or enable tomselect when the disabled attribute changes.
+    const ts = elem.tomselect
+    new window.MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.target.disabled && !ts.isDisabled) {
+          ts.disable()
+        } else if (!mutation.target.disabled && ts.isDisabled) {
+          ts.enable()
+        }
+      })
+    }).observe(elem, { attributeFilter: ['disabled'] })
+  })
 
   new window.MutationObserver(mutations => {
     mutations.forEach(mutation =>

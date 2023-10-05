@@ -80,6 +80,7 @@ def login_noperms_user(noperms_user, session_login):
 
 @pytest.fixture
 def ts_wrapper(_page):
+    """Return a locator for the TomSelect wrapper."""
     wrapper = _page.locator(".ts-wrapper")
     wrapper.wait_for()
     return wrapper
@@ -87,12 +88,14 @@ def ts_wrapper(_page):
 
 @pytest.fixture
 def wrapper_click(_page, ts_wrapper):
+    """Click the TomSelect wrapper (to open the dropdown)."""
     with _page.expect_request_finished():
         ts_wrapper.click()
 
 
 @pytest.fixture
 def search_input(_page, wrapper_click):
+    """Return a locator for the dropdown input."""
     search_input = _page.locator(".dropdown-input")
     search_input.wait_for()
     return search_input
@@ -183,3 +186,11 @@ def clear_button(ts_control):
     clear_button = ts_control.locator(".clear-button")
     clear_button.wait_for(state="attached")
     return clear_button
+
+
+@pytest.fixture
+def select_element(_page):
+    """Return the locator for the TomSelect select element."""
+    element = _page.locator("select[is-tomselect]")
+    element.wait_for(state="attached")
+    return element
