@@ -86,12 +86,18 @@ class TestMIZSelect:
         expect(dropdown).to_have_class(re.compile("p-2"))
 
     def test_disabled_when_input_gets_disabled(self, select_element, ts_wrapper):
-        """Assert that the TomSelect is disabled when the select element gets disabled."""
+        """
+        Assert that the TomSelect is disabled when the select element gets
+        disabled.
+        """
         select_element.evaluate("elem => elem.disabled = true")
         expect(ts_wrapper).to_have_class(re.compile("disabled"))
 
     def test_enabled_when_input_gets_enabled(self, select_element, ts_wrapper):
-        """Assert that the TomSelect is enabled when _the select element gets enabled."""
+        """
+        Assert that the TomSelect is enabled when a disabled select element
+        gets enabled again.
+        """
         select_element.evaluate("elem => elem.disabled = true")
         select_element.evaluate("elem => elem.disabled = false")
         expect(ts_wrapper).not_to_have_class(re.compile("disabled"))
