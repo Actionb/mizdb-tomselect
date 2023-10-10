@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## 0.9.2 (2023-10-10)
 
 - observe changes to the `disabled` attribute of "tomselected" elements and disable/enable the TomSelect instance of that element accordingly
 
