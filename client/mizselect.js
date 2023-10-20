@@ -178,9 +178,9 @@ function getSettings (elem) {
     maxOptions: null,
     searchField: [], // disable sifter search
     // Add bootstrap 'form-control' to the search input:
-    controlInput: '<input class="form-control mb-1"/>',
+    controlInput: '<input class="form-control mb-1 bg-light-subtle"/>',
     // Pad the dropdown to make it appear in a neat box:
-    dropdownClass: 'ts-dropdown p-2',
+    dropdownClass: 'ts-dropdown p-2 bg-body text-bg',
     maxItems: elem.hasAttribute('is-multiple') ? null : 1,
 
     valueField: elem.dataset.valueField,
@@ -261,7 +261,7 @@ function getPlugins (elem) {
       labelFieldLabel: elem.dataset.labelFieldLabel,
       labelColClass: elem.labelColClass,
       extraHeaders: JSON.parse(elem.dataset.extraHeaders),
-      headerClass: 'container-fluid bg-primary text-bg-primary pt-1 pb-1 mb-2 dropdown-header',
+      headerClass: 'container-fluid bg-primary text-bg-primary pt-1 pb-1 mb-2 dropdown-header border-bottom-0',
       titleRowClass: 'row'
     }
   }
