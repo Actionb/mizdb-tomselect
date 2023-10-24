@@ -30,3 +30,8 @@
 .edit ~ .remove {
   margin-left: 0 !important;
 }
+
+/* 'Disable' anchors (i.e. edit button, remove button) in disabled TomSelect elements */
+.disabled .ts-control .item a {
+  pointer-events: none;
+}
