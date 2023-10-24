@@ -17,7 +17,7 @@ def get_url(live_server):
 
 
 # NOTE: must not override original page fixture or tests can't be run against
-# multiple browsers
+#  multiple browsers: https://github.com/microsoft/playwright-pytest/issues/172
 @pytest.fixture
 def _page(page, get_url, view_name):
     page.goto(get_url(view_name))
