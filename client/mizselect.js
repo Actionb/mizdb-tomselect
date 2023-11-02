@@ -180,8 +180,9 @@ function getSettings (elem) {
     // Add bootstrap 'form-control' to the search input:
     controlInput: '<input class="form-control mb-1 bg-light-subtle"/>',
     // Pad the dropdown to make it appear in a neat box:
-    dropdownClass: 'ts-dropdown p-2 bg-body text-bg',
+    dropdownClass: 'ts-dropdown p-2 bg-body text-body',
     maxItems: elem.hasAttribute('is-multiple') ? null : 1,
+    itemClass: 'item bg-body text-body',
 
     valueField: elem.dataset.valueField,
     labelField: elem.dataset.labelField,
