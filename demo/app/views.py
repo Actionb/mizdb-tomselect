@@ -16,6 +16,7 @@ from .forms import (
     FilteredForm,
     MIZSelectForm,
     MIZSelectTabularForm,
+    PersonForm,
     SelectMultipleForm,
 )
 from .models import Person
@@ -118,7 +119,7 @@ class EditButtonView(FormView):
 
 class PersonViewMixin:
     model = Person
-    fields = ["name"]
+    form_class = PersonForm
     template_name = "model_form.html"
     success_url = reverse_lazy("index")
 

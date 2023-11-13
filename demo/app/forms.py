@@ -114,3 +114,10 @@ class EditButtonForm(forms.Form):
         widget=MIZSelectMultiple(Person, edit_url="edit_person", attrs={"class": "form-select"}),
         required=False,
     )
+
+
+class PersonForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = ["name"]
+        widgets = {"name": forms.TextInput(attrs={"class": "form-control"})}
