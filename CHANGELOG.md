@@ -1,5 +1,11 @@
 # Changelog
 
+## [unreleased]
+
+- fix dynamically added MIZSelect elements not getting disabled along with their 
+select element. Observers for the `disabled` attribute were not assigned to dynamically
+created elements.
+
 ## 0.9.3 (2023-11-06)
 
 - tweak CSS classes to better support dark mode
