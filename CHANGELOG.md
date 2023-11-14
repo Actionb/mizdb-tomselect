@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## 0.10.0 (2023-11-14)
 
 - fix dynamically added MIZSelect elements not getting disabled along with their 
 select element. Observers for the `disabled` attribute were not assigned to dynamically
