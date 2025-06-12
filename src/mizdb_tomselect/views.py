@@ -3,7 +3,7 @@ import json
 from django import http, views
 from django.apps import apps
 from django.contrib.auth import get_permission_codename
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.template.response import TemplateResponse
 
 SEARCH_VAR = "q"
@@ -103,13 +103,27 @@ class AutocompleteView(views.generic.list.BaseListView):
         """Create a new object with the given data."""
         return self.model.objects.create(**{self.create_field: data[self.create_field]})
 
+    def _create_field_is_unique(self):  # pragma: no cover
+        # Putting this call into a separate method makes mocking for the tests
+        # easier.
+        return self.model._meta.get_field(self.create_field).unique
+
     def post(self, request, *args, **kwargs):
         if not self.has_add_permission(request):
             return http.HttpResponseForbidden()
         if request.POST.get(self.create_field) is None:
             return http.HttpResponseBadRequest()
-        with transaction.atomic():
-            obj = self.create_object(request.POST)
+        try:
+            with transaction.atomic():
+                obj = self.create_object(request.POST)
+        except IntegrityError:
+            if self._create_field_is_unique():
+                # User attempted to create a duplicate of a unique object,
+                # return that existing object instead.
+                obj = self.model.objects.get(**{self.create_field: request.POST[self.create_field]})
+            else:
+                # IntegrityError was not because of uniqueness, bail with a 500:
+                return http.HttpResponseServerError()
         return http.JsonResponse({"pk": obj.pk, "text": str(obj)})
 
 

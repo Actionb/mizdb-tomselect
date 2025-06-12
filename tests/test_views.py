@@ -4,8 +4,15 @@ from urllib.parse import urlencode
 
 import pytest
 from django import forms
+from django.db import IntegrityError
 from django.db.models.sql.where import NothingNode
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse,
+    HttpResponseServerError,
+)
 from django.template.response import TemplateResponse
 from django.test import Client
 from django.urls import path, reverse
@@ -22,6 +29,7 @@ from mizdb_tomselect.views import (
     AutocompleteView,
     PopupResponseMixin,
 )
+from tests.factories import PersonFactory
 from tests.testapp.models import Person
 
 
@@ -413,6 +421,34 @@ class TestAutocompleteViewUnitTests:
         """
         with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
             assert isinstance(view.post(post_request(data={"create-field": "name"})), HttpResponseBadRequest)
+
+    @pytest.mark.parametrize("request_data", [{"create-field": "full_name", "full_name": "Bob Testman"}])
+    def test_post_unique_constraint(self, view, setup_view, post_request, request_data):
+        """
+        Assert that post returns an already existing object that matches the
+        create_field data if create_object raised an IntegrityError due to a
+        UNIQUE CONSTRAINT violation on a unique field.
+        """
+        existing = PersonFactory.create(full_name="Bob Testman")
+        with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
+            with patch.object(view, "_create_field_is_unique", new=Mock(return_value=True)):
+                with patch.object(view, "create_object", side_effect=IntegrityError):
+                    response = view.post(post_request())
+                    assert isinstance(response, JsonResponse)
+                    data = json.loads(response.content)
+                    assert data["pk"] == existing.pk
+
+    @pytest.mark.parametrize("request_data", [{"create-field": "full_name", "full_name": "Bob Testman"}])
+    def test_post_integrity_error(self, view, setup_view, post_request, request_data):
+        """
+        Assert that post returns a HttpResponseServerError if create_object
+        raises an IntegrityError and if the create_field is NOT unique.
+        """
+        with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
+            with patch.object(view, "_create_field_is_unique", new=Mock(return_value=False)):
+                with patch.object(view, "create_object", side_effect=IntegrityError):
+                    response = view.post(post_request())
+                    assert isinstance(response, HttpResponseServerError)
 
 
 @pytest.mark.django_db

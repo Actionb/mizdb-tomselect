@@ -3,6 +3,7 @@
 ## [unreleased]
 
 - drop Python 3.8 support
+- handle unique constraint violations on the `create_field` when creating new objects
 
 ## 0.10.0 (2023-11-14)
 
