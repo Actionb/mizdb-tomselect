@@ -9,7 +9,7 @@ from playwright.sync_api import expect
 
 from mizdb_tomselect.views import AutocompleteView, PopupResponseMixin
 from mizdb_tomselect.widgets import MIZSelect
-from tests.testapp.models import Person
+from tests.testapp.models import Person, Genre
 
 
 class AddForm(forms.Form):
@@ -43,6 +43,22 @@ class AddCreateForm(forms.Form):
     )
 
 
+class CreateUniqueForm(forms.Form):
+    """Test form with a widget whose model has a unique constraint."""
+
+    field = forms.ModelChoiceField(
+        Genre.objects.all(),
+        widget=MIZSelect(
+            model=Genre,
+            url="autocomplete",
+            add_url="add_page",
+            create_field="genre",
+            search_lookup="genre__icontains",
+            label_field="genre",
+        ),
+    )
+
+
 class PersonCreateView(PopupResponseMixin, CreateView):
     template_name = "base.html"
     model = Person
@@ -55,6 +71,9 @@ urlpatterns = [
     path("add_button/", FormView.as_view(form_class=AddForm, template_name="base.html"), name="add"),
     path("create_button/", FormView.as_view(form_class=AddCreateForm, template_name="base.html"), name="create"),
     path("add/", PersonCreateView.as_view(), name="add_page"),
+    path(
+        "create_unique/", FormView.as_view(form_class=CreateUniqueForm, template_name="base.html"), name="create_unique"
+    ),
 ]
 
 pytestmark = [pytest.mark.pw, pytest.mark.urls(__name__)]
@@ -223,3 +242,18 @@ class TestCreateButtonClick:
         should be immediately selected.
         """
         expect(_page.locator(".ts-control .item")).to_have_text("Bob Testman")
+
+
+@pytest.mark.parametrize("view_name", ["create_unique"])
+class TestCreateUnique:
+    def test_unique(self, login_perms_user, _page, add_button, search_input, dropdown):
+        """
+        Assert that the user is presenting with an alert if a unique constraint
+        violation occurred with the 'create data'.
+        """
+        Genre.objects.create(genre="Rock")
+        with _page.expect_request_finished():
+            search_input.fill("Rock")
+        add_button.click()
+        alert = dropdown.get_by_text("Object already exists.")
+        expect(alert).to_be_visible()

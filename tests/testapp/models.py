@@ -42,3 +42,15 @@ class City(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Genre(models.Model):
+    genre = models.CharField(max_length=50, unique=True)
+
+    name_field = "genre"
+    create_field = "genre"
+
+    class Meta:
+        verbose_name = "Genre"
+        verbose_name_plural = "Genres"
+        ordering = ["genre"]

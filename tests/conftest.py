@@ -6,7 +6,7 @@ from django.contrib.auth.models import Permission
 
 from mizdb_tomselect.views import PAGE_SIZE
 from tests.factories import CityFactory, PersonFactory
-from tests.testapp.models import Person
+from tests.testapp.models import Person, Genre
 
 # https://github.com/microsoft/playwright-python/issues/439
 # https://github.com/microsoft/playwright-pytest/issues/29#issuecomment-731515676
@@ -23,6 +23,7 @@ def perms_user():
     """Create a user that has 'add' permission for model Person."""
     user = get_user_model().objects.create_user(username="perms", password="foo")
     user.user_permissions.add(Permission.objects.get(codename=get_permission_codename("add", Person._meta)))
+    user.user_permissions.add(Permission.objects.get(codename=get_permission_codename("add", Genre._meta)))
     return user
 
 

@@ -25,7 +25,11 @@ export default function (userOptions) {
   const options = Object.assign({
     addUrl: '',
     className: 'btn btn-success mizselect-add-btn d-none',
-    label: 'Add'
+    label: 'Add',
+    errorMessages: {
+      error: 'Server Error! Something went wrong :(',
+      unique: 'Object already exists. Please select it out of the available options.'
+    }
   }, userOptions)
 
   if (!options.addUrl) return
@@ -44,6 +48,26 @@ export default function (userOptions) {
   addBtn.target = '_blank' // TODO: is this still needed with the popups?
   addBtn.innerHTML = options.label
   footer.appendChild(addBtn)
+
+  // Add an alert box
+  const errorMessages = options.errorMessages
+  const alertPlaceholder = document.createElement('div')
+  alertPlaceholder.id = 'alertPlaceholder'
+  const appendAlert = (message, type) => {
+    alertPlaceholder.innerHTML = ''
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+      `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+      `   <div>${message}</div>`,
+      '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+      '</div>'
+    ].join('')
+
+    alertPlaceholder.append(wrapper)
+  }
+  this.hook('after', 'setup', () => {
+    this.dropdown.insertBefore(alertPlaceholder, this.dropdown.children[0])
+  })
 
   // After loading new options, check if the button should be shown.
   this.on('load', () => {
@@ -85,11 +109,17 @@ export default function (userOptions) {
       fetch(elem.dataset.autocompleteUrl, options)
         .then(response => {
           if (!response.ok) {
+            appendAlert(errorMessages.error, 'danger')
             throw new Error('POST request failed.')
           }
           return response.json()
         }).then(json => {
-          addAndSelectNewOption(this, json.pk, json.text)
+          if (json.error_type) {
+            msg = errorMessages[json.error_type] || errorMessages["error"]
+            appendAlert(msg, json.error_level)
+          } else {
+            addAndSelectNewOption(this, json.pk, json.text)
+          }
         }).catch((error) => console.log(error))
     } else {
       // No search term or no createField set: just open the add page.

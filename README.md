@@ -8,24 +8,26 @@ Note that this was written specifically with the [MIZDB](https://github.com/Acti
 apply to your app.
 
 <!-- TOC -->
+
 * [TomSelect for Django (MIZDB)](#tomselect-for-django-mizdb)
-  * [Installation](#installation)
-  * [Usage](#usage)
-  * [Widgets](#widgets)
-    * [MIZSelect](#mizselect)
-    * [MIZSelectTabular](#mizselecttabular)
-      * [Adding more columns](#adding-more-columns)
-    * [MIZSelectMultiple & MIZSelectTabularMultiple](#mizselectmultiple--mizselecttabularmultiple)
-  * [Function & Features](#function--features)
-    * [Searching](#searching)
-    * [Option creation](#option-creation)
-      * [AJAX request](#ajax-request)
-    * [Changelist link](#changelist-link)
-    * [Inline edit link](#inline-edit-link)
-    * [Filter against values of another field](#filter-against-values-of-another-field)
-    * [Add & Edit popup response](#add--edit-popup-response)
-    * [Overwrite settings](#overwrite-settings)
-  * [Development & Demo](#development--demo)
+    * [Installation](#installation)
+    * [Usage](#usage)
+    * [Widgets](#widgets)
+        * [MIZSelect](#mizselect)
+        * [MIZSelectTabular](#mizselecttabular)
+            * [Adding more columns](#adding-more-columns)
+        * [MIZSelectMultiple & MIZSelectTabularMultiple](#mizselectmultiple--mizselecttabularmultiple)
+    * [Function & Features](#function--features)
+        * [Searching](#searching)
+        * [Option creation](#option-creation)
+            * [AJAX request](#ajax-request)
+        * [Changelist link](#changelist-link)
+        * [Inline edit link](#inline-edit-link)
+        * [Filter against values of another field](#filter-against-values-of-another-field)
+        * [Add & Edit popup response](#add--edit-popup-response)
+        * [Overwrite settings](#overwrite-settings)
+    * [Development & Demo](#development--demo)
+
 <!-- TOC -->
 
 ----
@@ -265,6 +267,26 @@ class AutocompleteView:
 
 Override the view's `create_object` method to change the creation process.
 
+If something goes wrong when creating the object, an alert message will be inserted at the top of the dropdown. To
+change the text of the alert message, you can [overwrite the settings](#overwrite-settings).
+
+```javascript
+window.addEventListener('initMIZSelect', (e) => {
+  const elem = e.target
+  const mySettings = { 
+    plugins:{ 
+      add_button: { 
+        errorMessages: {
+          error: 'My general message for errors',
+          unique: 'My message explicitly for errors from unique constraint violations'
+        } 
+      } 
+    } 
+  }
+  elem.initMIZSelect(mySettings)
+})
+```
+
 ### Changelist link
 
 The dropdown will include a link to the changelist of the given model if you
@@ -347,6 +369,7 @@ This can be done by using the `PopupResponseMixin` view mixin with your CreateVi
 ```python
 from mizdb_tomselect.views import PopupResponseMixin
 
+
 class CityCreateView(PopupResponseMixin, CreateView):
     ...
 
@@ -356,13 +379,15 @@ class PersonChangeView(PopupResponseMixin, UpdateView):
 ```
 
 You also need to modify the template for the Create-/UpdateView by adding a hidden field to the form:
+
 ```html
+
 <form>
-...
-{% if is_popup %}
+    ...
+    {% if is_popup %}
     <input type="hidden" name="{{ is_popup_var }}" value="1">
-{% endif %}
-...
+    {% endif %}
+    ...
 </form>
 ```
 
@@ -374,11 +399,13 @@ This is, roughly, a slimmed down version of how django admin handles popups for 
 
 ### Overwrite settings
 
-To change MIZSelect or [TomSelect settings](https://tom-select.js.org/docs/), you can add a handler for the `initMIZSelect` event.
-The event is dispatched before the TomSelect constructor is called. 
+To change MIZSelect or [TomSelect settings](https://tom-select.js.org/docs/), you can add a handler for the
+`initMIZSelect` event.
+The event is dispatched before the TomSelect constructor is called.
 The target of the event is the element that is about to be initialized.
 You can pass your own settings to the init function `initMIZSelect` that is attached to the target element.
 For example, to overwrite the title of the remove buttons:
+
 ```javascript
 window.addEventListener('initMIZSelect', (e) => {
   const elem = e.target
@@ -386,6 +413,7 @@ window.addEventListener('initMIZSelect', (e) => {
   elem.initMIZSelect(mySettings)
 })
 ```
+
 The settings will be merged with the default MIZSelect settings, and the TomSelect constructor
 will be called with the merged settings.
 

@@ -118,9 +118,7 @@ class AutocompleteView(views.generic.list.BaseListView):
                 obj = self.create_object(request.POST)
         except IntegrityError:
             if self._create_field_is_unique():
-                # User attempted to create a duplicate of a unique object,
-                # return that existing object instead.
-                obj = self.model.objects.get(**{self.create_field: request.POST[self.create_field]})
+                return http.JsonResponse({"error_type": "unique", "error_level": "warning"})
             else:
                 # IntegrityError was not because of uniqueness, bail with a 500:
                 return http.HttpResponseServerError()

@@ -29,7 +29,6 @@ from mizdb_tomselect.views import (
     AutocompleteView,
     PopupResponseMixin,
 )
-from tests.factories import PersonFactory
 from tests.testapp.models import Person
 
 
@@ -425,18 +424,18 @@ class TestAutocompleteViewUnitTests:
     @pytest.mark.parametrize("request_data", [{"create-field": "full_name", "full_name": "Bob Testman"}])
     def test_post_unique_constraint(self, view, setup_view, post_request, request_data):
         """
-        Assert that post returns an already existing object that matches the
-        create_field data if create_object raised an IntegrityError due to a
-        UNIQUE CONSTRAINT violation on a unique field.
+        Assert that post returns a response with an error message if the user
+        is attempting to use data on the create_field that would violate its
+        unique constraints.
         """
-        existing = PersonFactory.create(full_name="Bob Testman")
         with patch.object(view, "has_add_permission", new=Mock(return_value=True)):
             with patch.object(view, "_create_field_is_unique", new=Mock(return_value=True)):
                 with patch.object(view, "create_object", side_effect=IntegrityError):
                     response = view.post(post_request())
                     assert isinstance(response, JsonResponse)
                     data = json.loads(response.content)
-                    assert data["pk"] == existing.pk
+                    assert data["error_type"] == "unique"
+                    assert data["error_level"] == "warning"
 
     @pytest.mark.parametrize("request_data", [{"create-field": "full_name", "full_name": "Bob Testman"}])
     def test_post_integrity_error(self, view, setup_view, post_request, request_data):

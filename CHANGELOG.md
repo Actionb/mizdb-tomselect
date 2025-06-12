@@ -3,7 +3,7 @@
 ## [unreleased]
 
 - drop Python 3.8 support
-- handle unique constraint violations on the `create_field` when creating new objects
+- show error messages in the dropdown when AJAX requests for object creation failed
 
 ## 0.10.0 (2023-11-14)
 
