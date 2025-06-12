@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Django autocomplete widgets and views using TomSelect"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "Django"
 ]

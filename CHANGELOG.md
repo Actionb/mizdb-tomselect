@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased]
+
+- drop Python 3.8 support
+
 ## 0.10.0 (2023-11-14)
 
 - fix dynamically added MIZSelect elements not getting disabled along with their 
