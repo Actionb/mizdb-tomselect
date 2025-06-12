@@ -1,4 +1,4 @@
-Django==4.2.22
+Django==5.2.3
 coverage==7.9.0
 tox==4.26.0
 pytest==8.4.0
