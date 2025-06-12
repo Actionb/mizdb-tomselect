@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django import forms
 from django.db import models
+from django.forms.models import ModelChoiceIterator
 from django.urls import path
 
 from mizdb_tomselect.widgets import MIZSelect, MIZSelectMultiple, MIZSelectTabular, MIZSelectTabularMultiple
@@ -101,10 +102,15 @@ class TestMIZSelect:
         """
         mock_filter = Mock()
         mock_queryset = Mock(filter=mock_filter)
+        # With Django 5.0, ChoiceWidget.choices is now a property, which makes
+        # mocking the queryset difficult; attempting patches resulted in
+        # "'property 'choices' of 'MIZSelect' object has no deleter" errors.
+        # So just override the choices attribute directly with an iterator.
+        iterator = ModelChoiceIterator(field=Mock(spec=forms.Field, queryset=mock_queryset))
         with patch("mizdb_tomselect.widgets.super"):
-            with patch.object(widget, "choices", new=Mock(queryset=mock_queryset)):
-                widget.optgroups("name", selected)
-                mock_filter.assert_called_with(pk__in=[str(c) for c in selected])
+            widget.choices = iterator
+            widget.optgroups("name", selected)
+            mock_filter.assert_called_with(pk__in=[str(c) for c in selected])
 
     def test_build_attrs(self, make_widget):
         """Assert that the required HTML attributes are added."""
