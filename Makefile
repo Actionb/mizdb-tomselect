@@ -12,13 +12,11 @@ test:
 .PHONY: reformat
 reformat:
 	ruff check . --fix
-	black .
 	npx standard client/ --fix
 
 .PHONY: lint
 lint:
 	ruff . --no-fix
-	black . --check
 	npx standard client/
 
 .PHONY: build
