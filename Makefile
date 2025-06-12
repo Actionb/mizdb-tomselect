@@ -7,7 +7,12 @@ tox:
 .PHONY: test
 test:
 	npm run build
-	pytest --cov --cov-config=./tests/.coveragerc --cov-report=term-missing -n auto tests
+	pytest --cov --cov-config=./tests/.coveragerc --cov-report=term-missing -m 'not pw' tests
+
+.PHONY: test-pw
+test-pw:
+	npm run build
+	pytest -m pw -n auto tests --browser=firefox
 
 .PHONY: reformat
 reformat:
