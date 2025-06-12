@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## 0.11.0 (2025-06-12)
 
 - drop Python 3.8 support
 - show error messages in the dropdown when AJAX requests for object creation failed
